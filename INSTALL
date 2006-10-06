@@ -1,0 +1,64 @@
+INSTALL.txt - Clewn installation notes.
+This document describes how to install Clewn.
+
+    a) prerequisites
+    b) compile
+    c) install
+    d) remote debugging
+
+
+a) REQUIRED:
+    GDB:	    gdb 6.4 or all previous versions starting from gdb 5.3
+    VIM:	    any version starting from Vim 6.3 with
+		    the |+netbeans_intg| feature enabled
+    GNU readline
+
+No need to check for the readline library: when running ./configure, a check
+is made to ensure that readline can be found on the target system.
+GNU readline can be found at:
+    http://cnswww.cns.cwru.edu/php/chet/readline/rltop.html
+
+
+b) COMPILE:
+In 'clewn' directory, run the following commands:
+
+    ./configure
+    make
+
+
+c) INSTALL:
+1 - Install the 'clewn' program somewhere in your $PATH.
+
+2 - Install the runtime files:
+    Copy the file clewn_runtime.tgz found in the runtime directory, to your
+    runtime path. To find your runtime path location execute the vim command
+    (this is usually $HOME/.vim):
+
+	:set runtimepath?
+
+    Untar clewn_runtime.tgz in your runtime path. After this step, you should
+    have the following files:
+
+	clewn.vim
+	doc/clewn.txt
+	macros/clewn_mappings.vim   (not needed with vim 7.0 and above)
+	syntax/gdbvar.vim
+
+    Change to the doc directory, start Vim and run the ":helptags ." command to
+    process the taglist help file. Without this step, you cannot jump to the
+    taglist help topics. You can now use the ":help clewn" command to get the
+    clewn documentation.
+
+d) REMOTE DEBUGGING:
+When cross-compiling, add the --host and --build argument on the command
+line of configure. Then run make. For example, with an arm target:
+
+./configure CC=/path_to_gcc/arm-gcc --build=i686-pc-linux-gnu --host=arm-linux
+
+The readline and curses libraries must be available on the target.
+
+The following commands are run:
+
+    host:	gvim -c "run clewn.vim" -nb:target_ip_address
+    target:	clewn -x pathnames_map -nb:target_ip_address
+

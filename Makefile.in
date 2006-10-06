@@ -1,0 +1,70 @@
+# Makefile.in for Clewn 			vim:ts=8:sw=8:tw=78
+#
+# Build the Makefile from this file by running './configure'
+#
+
+CC	= @CC@
+DEFS	= @DEFS@
+SRCDIR	= @srcdir@
+LDFLAGS = @LDFLAGS@
+LIBS	= @LIBS@
+
+CFLAGS  = -O
+#CFLAGS    := -g -Wall -Wextra -Wstrict-prototypes -DGDB_MTRACE
+
+# disable pointer signedness warnings in gcc 4.0 (assume GNU make)
+cc-option  = $(shell if $(CC) $(1) -S -o /dev/null -xc /dev/null \
+		> /dev/null 2>&1; then echo "$(1)"; else echo "$(2)"; fi ;)
+CFLAGS    += $(call cc-option,-Wno-pointer-sign,)
+
+SOURCES = *.c *.h
+GDB_OBJ = objects/clewn.o objects/gdb_lvl2.o objects/gdb_lvl3.o objects/netbeans.o
+OBJECTS = $(GDB_OBJ) objects/misc.o objects/pty.o objects/obstack.o
+
+.c.o:
+	$(CCC) $<
+
+CCC = $(CC) -c -I$(SRCDIR) $(DEFS) -DHAVE_CLEWN $(CFLAGS)
+
+all: clewn
+
+clewn: objects $(OBJECTS)
+	$(CC) $(LDFLAGS) -o $@ $(OBJECTS) $(LIBS)
+
+objects:
+	@mkdir -p objects
+
+objects/clewn.o: clewn.c gdb.h clewn.h misc.h
+	$(CCC) -o $@ clewn.c
+
+objects/gdb_lvl2.o: gdb_lvl2.c gdb.h clewn.h misc.h
+	$(CCC) -o $@ gdb_lvl2.c
+
+objects/gdb_lvl3.o: gdb_lvl3.c gdb.h clewn.h misc.h
+	$(CCC) -o $@ gdb_lvl3.c
+
+objects/netbeans.o: netbeans.c gdb.h clewn.h misc.h
+	$(CCC) -o $@ netbeans.c
+
+objects/misc.o: misc.c misc.h
+	$(CCC) -o $@ misc.c
+
+objects/pty.o: pty.c
+	$(CCC) -o $@ pty.c
+
+objects/obstack.o: obstack.c
+	$(CCC) -o $@ obstack.c
+
+tags: $(SOURCES)
+	ctags $(SOURCES)
+
+clean:
+	-rm -f clewn
+	-rm -f objects/*.o
+
+distclean: clean
+	-rmdir objects
+	-rm -f tags cscope.out
+	-rm -f Makefile config.cache config.status config.h config.log
+	-rm -fr autom4te.cache
+
