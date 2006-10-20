@@ -238,6 +238,9 @@
 /* Define if strings.h and string.h cannot both be included when defined. */
 #undef NO_STRINGS_WITH_STRING_H
 
+/* Name of package */
+#undef PACKAGE
+
 /* Define to the address where bug reports for this package should be sent. */
 #undef PACKAGE_BUGREPORT
 
@@ -288,6 +291,9 @@
 
 /* Define if we can use memmove for overlapping copies */
 #undef USEMEMMOVE
+
+/* Version number of package */
+#undef VERSION
 
 /* Define to empty if `const' does not conform to ANSI C. */
 #undef const

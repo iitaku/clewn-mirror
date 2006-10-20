@@ -1,55 +1,54 @@
 INSTALL.txt - Clewn installation notes.
-This document describes how to install Clewn.
 
-    a) prerequisites
-    b) compile
+    a) required
+    b) build
     c) install
     d) remote debugging
 
 
 a) REQUIRED:
-    GDB:	    gdb 6.4 or all previous versions starting from gdb 5.3
+------------
+    GDB:	    gdb 6.4 or any previous version, starting from gdb 5.3
     VIM:	    any version starting from Vim 6.3 with
 		    the |+netbeans_intg| feature enabled
     GNU readline
 
-No need to check for the readline library: when running ./configure, a check
-is made to ensure that readline can be found on the target system.
-GNU readline can be found at:
+There is no need for you to check for the existence of the readline library:
+when configure is run, a check is made to ensure that readline can be found
+on your system. GNU readline can be found at:
     http://cnswww.cns.cwru.edu/php/chet/readline/rltop.html
 
 
-b) COMPILE:
-In 'clewn' directory, run the following commands:
+b) BUILD:
+---------
+In the clewn directory, run the following commands:
 
-    ./configure
-    make
+    $ ./configure
+    $ make
+
+For a user local installation that does not require root privileges, run
+the following configure command:
+
+    $ vimdir=$HOME/.vim  ./configure  --prefix=$HOME
+
+In this case, the clewn program is installed in $HOME/bin, and the vim
+runtime files in $vimdir.
 
 
 c) INSTALL:
-1 - Install the 'clewn' program somewhere in your $PATH.
+-----------
+In the clewn directory, run the following command:
 
-2 - Install the runtime files:
-    Copy the file clewn_runtime.tgz found in the runtime directory, to your
-    runtime path. To find your runtime path location execute the vim command
-    (this is usually $HOME/.vim):
+    $ make install
 
-	:set runtimepath?
+You can now use the ":help clewn" command within vim, to get access to the
+clewn documentation.
 
-    Untar clewn_runtime.tgz in your runtime path. After this step, you should
-    have the following files:
+Run 'make uninstall', to uninstall clewn.
 
-	clewn.vim
-	doc/clewn.txt
-	macros/clewn_mappings.vim   (not needed with vim 7.0 and above)
-	syntax/gdbvar.vim
-
-    Change to the doc directory, start Vim and run the ":helptags ." command to
-    process the taglist help file. Without this step, you cannot jump to the
-    taglist help topics. You can now use the ":help clewn" command to get the
-    clewn documentation.
 
 d) REMOTE DEBUGGING:
+--------------------
 When cross-compiling, add the --host and --build argument on the command
 line of configure. Then run make. For example, with an arm target:
 

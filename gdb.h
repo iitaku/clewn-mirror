@@ -17,7 +17,7 @@
  * Free Software Foundation, Inc.,
  * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  *
- * $Id: gdb.h 88 2006-08-13 12:12:19Z xavier $
+ * $Id: gdb.h 101 2006-10-18 19:22:02Z xavier $
  */
 
 #ifndef GDB_H
@@ -643,16 +643,16 @@ extern __ptr_t (*s_realloc) (void *, size_t, const void *);
 /* we do call sometimes vim_free directly and allocation is not mtraced:
  * when the called Vim function does not free all its allocated memory
  * after it returns */
-# define xmalloc(s) ({char_u *p; get_hooks; p=xmalloc((s)); mv_hooks; p;})
-# define xcalloc(s) ({char_u *p; get_hooks; p=xcalloc((s)); mv_hooks; p;})
-# define xrealloc(m,s) ({char_u *p; get_hooks; p=xrealloc((m),(s)); mv_hooks; p;})
+# define xmalloc(s) ({char_u *mret; get_hooks; mret=xmalloc((s)); mv_hooks; mret;})
+# define xcalloc(s) ({char_u *mret; get_hooks; mret=xcalloc((s)); mv_hooks; mret;})
+# define xrealloc(m,s) ({char_u *mret; get_hooks; mret=xrealloc((m),(s)); mv_hooks; mret;})
 # define xfree(x) ({get_hooks; xfree((x)); mv_hooks;})
-# define clewn_strsave(s) ({char_u *p; get_hooks; p=clewn_strsave((s)); mv_hooks; p;})
-# define clewn_strnsave(s,l) ({char_u *p; get_hooks; p=clewn_strnsave((s),(l)); mv_hooks; p;})
+# define clewn_strsave(s) ({char_u *mret; get_hooks; mret=clewn_strsave((s)); mv_hooks; mret;})
+# define clewn_strnsave(s,l) ({char_u *mret; get_hooks; mret=clewn_strnsave((s),(l)); mv_hooks; mret;})
 
-# define vim_strsave_escaped(s,e) ({char_u *p; get_hooks; p=vim_strsave_escaped((s),(e)); mv_hooks; p;})
-# define vim_regcomp(s,m) ({regprog_T *p; get_hooks; p=vim_regcomp((s),(m)); mv_hooks; p;})
-# define FullName_save(n,f) ({char_u *p; get_hooks; p=FullName_save((n),(f)); mv_hooks; p;})
+# define vim_strsave_escaped(s,e) ({char_u *mret; get_hooks; mret=vim_strsave_escaped((s),(e)); mv_hooks; mret;})
+# define vim_regcomp(s,m) ({regprog_T *mret; get_hooks; mret=vim_regcomp((s),(m)); mv_hooks; mret;})
+# define FullName_save(n,f) ({char_u *mret; get_hooks; mret=FullName_save((n),(f)); mv_hooks; mret;})
 # define get_option_value(n,u,s,o) ({int r; get_hooks; r=get_option_value((n),(u),(s),(o)); mv_hooks; r;})
 #endif	/* GDB_MTRACE */
 #endif	/* GDB_H */

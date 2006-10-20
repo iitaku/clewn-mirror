@@ -17,7 +17,7 @@
  * Free Software Foundation, Inc.,
  * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  *
- * $Id: misc.c 89 2006-08-14 15:32:09Z xavier $
+ * $Id: misc.c 101 2006-10-18 19:22:02Z xavier $
  */
 
 #ifdef HAVE_CLEWN
@@ -105,10 +105,10 @@ static void (*misc_abort)(void) = NULL;	    /* registered abort function */
 
 /* Register an abort function for when allocating memory fails. */
     void
-xatabort(abort)
-    void (*abort)(void);
+xatabort(abort_func)
+    void (*abort_func)(void);
 {
-    misc_abort = abort;
+    misc_abort = abort_func;
 }
 
 /* allocate memory */

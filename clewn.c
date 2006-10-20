@@ -17,7 +17,7 @@
  * Free Software Foundation, Inc.,
  * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  *
- * $Id: clewn.c 93 2006-08-26 17:14:47Z xavier $
+ * $Id: clewn.c 101 2006-10-18 19:22:02Z xavier $
  */
 
 #include <config.h>
@@ -74,8 +74,6 @@
 #else
 # define O_EXTRA    0
 #endif
-
-#define CLEWN_VERSION "1.9"
 
 #define CLEWN_HELP "Clewn version %s using readline library revision %s.\n\
 \n\
@@ -402,7 +400,7 @@ main(int argc, char ** argv)
 			    p_va = *argv;
 		    }
 		    else if (*(opt + 2) == NUL) { /* "-v" print help */
-			fprintf(stderr, CLEWN_HELP, CLEWN_VERSION, rl_library_version);
+			fprintf(stderr, CLEWN_HELP, PACKAGE_VERSION, rl_library_version);
 			clewn_abort();
 		    }
 		    else {
@@ -464,7 +462,7 @@ main(int argc, char ** argv)
 		    break;
 
 		case 'h':   /* "-h" print help */
-		    fprintf(stderr, CLEWN_HELP, CLEWN_VERSION, rl_library_version);
+		    fprintf(stderr, CLEWN_HELP, PACKAGE_VERSION, rl_library_version);
 		    clewn_abort();
 
 		default:
@@ -1107,11 +1105,11 @@ clewn_getout()
 
 /** Send a cmd to gdb */
     void
-gdb_docmd(gdb, cmd)
-    gdb_handle_T *gdb;
+gdb_docmd(gdb_inst, cmd)
+    gdb_handle_T *gdb_inst;
     char_u  *cmd;	/* gdb cmd */
 {
-    gdb_T *this = (gdb_T *)gdb;
+    gdb_T *this = (gdb_T *)gdb_inst;
 
     if (this == NULL || ! GDB_STATE(this, GS_UP))
 	return;
@@ -1140,11 +1138,11 @@ gdb_docmd(gdb, cmd)
 
 /** Set the cmd to be inserted at start of readline */
     void
-gdb_setwinput(gdb, cmd)
-    gdb_handle_T *gdb;
+gdb_setwinput(gdb_inst, cmd)
+    gdb_handle_T *gdb_inst;
     char_u *cmd;	/* cmd to insert */
 {
-    gdb_T *this = (gdb_T *)gdb;
+    gdb_T *this = (gdb_T *)gdb_inst;
 
     if (this == NULL)
 	return;
@@ -1161,10 +1159,10 @@ gdb_setwinput(gdb, cmd)
 
 /** Return TRUE if we are opening the gdb input-line window */
     int
-gdb_iswinput(gdb)
-    gdb_handle_T *gdb;
+gdb_iswinput(gdb_inst)
+    gdb_handle_T *gdb_inst;
 {
-    return (gdb != NULL ? ((gdb_T *)gdb)->winput_cmd != NULL : FALSE);
+    return (gdb_inst != NULL ? ((gdb_T *)gdb_inst)->winput_cmd != NULL : FALSE);
 }
 
 /* Start a gdb process */
@@ -1229,7 +1227,7 @@ module_init()
 
 	/* create a gdb_T instance */
 	gdb = (gdb_T *)xcalloc(sizeof(gdb_T));
-	gdb->version = CLEWN_VERSION;
+	gdb->version = PACKAGE_VERSION;
 
 	clear_gdb_T();
 

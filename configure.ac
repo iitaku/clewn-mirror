@@ -1,8 +1,27 @@
 # Process this file with autoconf to produce a configure script.
 AC_PREREQ(2.59)
-AC_INIT([clewn],[1],[xdegaye@users.sourceforge.net])
+AC_INIT([clewn],[1.9.2],[xdegaye@users.sourceforge.net])
 AC_CONFIG_SRCDIR([clewn.h])
-AC_CONFIG_HEADER([config.h])
+AC_CONFIG_HEADERS([config.h])
+
+AC_CONFIG_AUX_DIR(./scripts)
+AM_INIT_AUTOMAKE([foreign])
+AM_MAINTAINER_MODE
+
+AC_ARG_ENABLE(debug,
+AS_HELP_STRING([--enable-debug], [turn on debugging]),
+[case "${enableval}" in
+  yes) debug=true ;;
+  no)  debug=false ;;
+  *) AC_MSG_ERROR(bad value ${enableval} for --enable-debug) ;;
+esac],[debug=false])
+AM_CONDITIONAL(DEBUG, test x$debug = xtrue)
+
+# vim runtime files directory
+if test -z "$vimdir" ; then
+    vimdir=/usr/local/share/vim/vimfiles
+fi
+AC_ARG_VAR(vimdir, [vim runtime files directory [/usr/local/share/vim/vimfiles]])
 
 # Checks for programs.
 AC_PROG_CC
@@ -194,5 +213,40 @@ else
   AC_MSG_RESULT([don't know])
 fi
 
-AC_CONFIG_FILES([Makefile])
+# Special options used with gcc (taken from gnupg configure.ac).
+if test "$GCC" = yes; then
+    # Note that it is okay to use CFLAGS here because this are just
+    # warning options and the user should have a chance of overriding
+    #them.
+    if test "$USE_MAINTAINER_MODE" = "yes"; then
+	CFLAGS="$CFLAGS -Wall -Wextra -Wcast-align -Wshadow -Wstrict-prototypes"
+    else
+	CFLAGS="$CFLAGS -Wall"
+    fi
+
+    # This is handy for debugging so the compiler doesn't rearrange
+    # things and eliminate variables.
+    AC_ARG_ENABLE(optimization,
+       AC_HELP_STRING([--disable-optimization],
+		      [disable compiler optimization]),
+		      [if test $enableval = no ; then
+			 CFLAGS=`echo $CFLAGS | sed 's/-O[[0-9]]//'`
+		       fi])
+
+    AC_MSG_CHECKING([if gcc supports -Wno-pointer-sign])
+
+    _gcc_cflags_save=$CFLAGS
+    CFLAGS="-Wno-pointer-sign"
+
+    AC_COMPILE_IFELSE(AC_LANG_PROGRAM([]),_gcc_psign=yes,_gcc_psign=no)
+    AC_MSG_RESULT($_gcc_psign)
+
+    CFLAGS=$_gcc_cflags_save;
+
+    if test x"$_gcc_psign" = xyes ; then
+       CFLAGS="$CFLAGS -Wno-pointer-sign"
+    fi
+fi
+
+AC_CONFIG_FILES([Makefile runtime/Makefile])
 AC_OUTPUT

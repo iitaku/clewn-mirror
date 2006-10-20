@@ -9,7 +9,8 @@ COMPILING AND INSTALLATION
 See INSTALL.
 
 DOCUMENTATION
-See the user manual in doc/clewn.txt.
+See the user manual in doc/clewn.txt, or type the vim command ':help clewn'
+within VIM.
 
 FEATURES
 
