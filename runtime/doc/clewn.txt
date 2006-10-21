@@ -1,4 +1,4 @@
-*clewn.txt*                                       Last change: 2006 Aug 22
+*clewn.txt*                                       Last change: 2006 Oct 21
 
 
 			      CLEWN USER MANUAL
@@ -393,6 +393,23 @@ The available keys are the uppercase characters, all control characters except
 
 To remove a default key mapping, uncomment the corresponding line in
 '.clewn_keys', and replace the gdb command with the empty string.
+
+Since the netbeans 'specialKeys' commmand does not allow to unmap a key, you
+must source 'clewn_mappings.vim' if you need that feature. Run the following
+command:
+
+    :" user local installation ~
+    :source ~/.vim/macros/clewn_mappings.vim ~
+or
+    :" standard installation ~
+    :source $VIMRUNTIME/macros/clewn_mappings.vim ~
+
+The key <F7> is used to toggle between the 'clewn_mappings.vim' mappings and
+the default VIM mappings.
+
+When you want to be able to unmap keys, you must edit both files
+('.clewn_keys' and 'clewn_mappings.vim') in order to customize the keys
+mapping to your needs.
 
 
 4.3.2 Customizing key mappings - vim version prior to 7.0

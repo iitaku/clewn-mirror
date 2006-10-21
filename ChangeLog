@@ -1,5 +1,8 @@
 
-2006-10-19  Xavier de Gaye <xdegaye at users dot sourceforge dot net>
+2006-10-21  Xavier de Gaye <xdegaye at users dot sourceforge dot net>
+
+	* runtime/macros/clewn_mappings.vim:
+	fix cannot unmap vim keys set by clewn, when using vim 7.0 or above
 
 	* Makefile.am, configure.ac:
 	use GNU automake to build, install and distribute clewn
