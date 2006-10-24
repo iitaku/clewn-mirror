@@ -17,7 +17,7 @@
  * Free Software Foundation, Inc.,
  * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  *
- * $Id: clewn.c 101 2006-10-18 19:22:02Z xavier $
+ * $Id: clewn.c 106 2006-10-24 17:50:54Z xavier $
  */
 
 #include <config.h>
@@ -102,7 +102,7 @@ of the local network interfaces in standard dot notation.\n\n"
 #define CLEWN_HISTORY_FILE  "/.clewn_history"
 #define CLEWN_KEYS_FILE	    "/.clewn_keys"
 #define HISTORY_DFLT_SIZE   50
-#define GVIM_DEFAULT_ARG    " -c \"run clewn.vim\" -nb "
+#define GVIM_DEFAULT_ARG    " -c \"run clewn.vim\" -nb -g "
 
 int p_asm = 0;			/* assembly support when non zero */
 
@@ -1089,7 +1089,7 @@ clewn_getout()
 
     printf("\r                                                         \n");
     if (wtime <= 0)
-	printf("Gvim is still up and running\n");
+	printf("Vim is still up and running\n");
 
     gdb_close(gdb);		/* terminate GDB */
     module_end();		/* release module resources */

@@ -1,6 +1,9 @@
 
 2006-10-21  Xavier de Gaye <xdegaye at users dot sourceforge dot net>
 
+	* clewn.c: when '-va -g' is missing from the command line, vim does
+	not start the GUI
+
 	* runtime/macros/clewn_mappings.vim:
 	fix cannot unmap vim keys set by clewn, when using vim 7.0 or above
 
