@@ -1,4 +1,4 @@
-*clewn.txt*                                       Last change: 2006 Oct 21
+*clewn.txt*                                       Last change: 2006 Nov 5
 
 
 			      CLEWN USER MANUAL
@@ -10,9 +10,10 @@ The Clewn user guide				    *clewn*
     2.1 Source path				    |clewn-source-path|
     2.2 Clewn modes				    |clewn-modes|
 3. Clewn options				    |clewn-options|
-    3.1 NetBeans connection parameters		    |clewn-netbeans|
-    3.2 Remote debugging			    |clewn-remote|
-    3.3 Debug mode				    |clewn-debug|
+    3.1 Project file				    |clewn-project|
+    3.2 NetBeans connection parameters		    |clewn-netbeans|
+    3.3 Remote debugging			    |clewn-remote|
+    3.4 Debug mode				    |clewn-debug|
 4. Key mappings					    |clewn-mappings|
     4.1 Default mappings			    |clewn-default-keys|
     4.2 Configuration file			    |clewn-confile-keys|
@@ -71,6 +72,12 @@ Clewn provides the following features:
   there is no source code for the frame or when doing instruction stepping
   (stepi, nexti) the program counter line within an assembly window is
   highlighted.
+
+* The project file stores the current gdb settings. They are automatically
+  sourced by clewn on gdb startup and saved by clewn when quitting or when
+  restarting gdb. These settings are the gdb current working directory, the
+  program file to debug, the command line arguments passed to this program
+  when run by gdb, and the list of breakpoints set in this program.
 
 * Depending on the GDB version you are using, clewn may run in two different
   modes: level 2 when using GDB annotations level 2 and level 3 when using
@@ -149,15 +156,16 @@ Clewn can be started with the following options:
 
 Usage: clewn [-vc gvim_cmd] [-va gvim_args]
              [-gc gdb_cmd] [-ga gdb_args]
-	     [-x pathnames_map]
+             [-p project] [-x pathnames_map]
              [-a] [-nb[:<host>[:<port>[:<passwd>]]]] [-d] [-r]
 
   -vc gvim_cmd          gvim shell command or gvim pathname (default 'gvim')
   -va gvim_args         gvim command line arguments
   -gc gdb_cmd           gdb shell command or gdb pathname (default 'gdb')
   -ga gdb_args          gdb command line arguments
-  -a                    enable assembly support
+  -p  project           project file name
   -x pathnames_map      remote debugging
+  -a                    enable assembly support
   -nb:<host>:<port>:<passwd>  NetBeans connection parameters
                             <host>   default {$__NETBEANS_HOST|localhost}
                             <port>   default {$__NETBEANS_SOCKET|3219}
@@ -182,8 +190,27 @@ method with the 'tr' command from GNU coreutils:
     clewn -va "$file_list" ~
 
 
+						    *clewn-project*
+3.1 Project file:
+-----------------
+The project file stores the current gdb settings. They are automatically
+sourced by clewn on gdb startup and saved by clewn when quitting or when
+restarting gdb. These settings are the gdb current working directory, the
+program file to debug, the command line arguments passed to this program when
+run by gdb, and the list of breakpoints set in this program.
+
+Clewn does not write the project file when the program name to debug is not
+set in gdb (the gdb command 'info file' returns nothing). For this reason,
+clewn does not overwrite the existing project file when gdb finds an error
+while sourcing the project file because it cannot change to the requested
+directory, or because it cannot load the program file to debug. This is not
+the case if gdb finds an error while setting a breakpoint: an error message is
+printed, but this does not prevent clewn from overwritting the project file
+the next time the command 'restart' is run, or on quitting.
+
+
 						    *clewn-netbeans*
-3.1 NetBeans connection parameters:
+3.2 NetBeans connection parameters:
 -----------------------------------
 <host> is the name of one of the local IP network interfaces and may be
 an IPv4 address in standard dot notation. When omitted the environment
@@ -205,7 +232,7 @@ can revert this by using option '-r'.
 
 
 						    *clewn-remote*
-3.2 Remote debugging:
+3.3 Remote debugging:
 --------------------
 The '-x' option with its mandatory parameter pathnames_map, is used to do
 remote debugging on a target where clewn and GDB are running, from a host
@@ -277,7 +304,7 @@ Note: remote debugging is only available with mode level 3 (see below).
 
 
 						    *clewn-debug*
-3.3 Debug mode:
+3.4 Debug mode:
 ---------------
 Debug mode is selected with option '-d'. In this mode all NetBeans messages
 are printed on the screen, actually to stderr.

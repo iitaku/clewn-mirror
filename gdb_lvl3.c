@@ -17,7 +17,7 @@
  * Free Software Foundation, Inc.,
  * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  *
- * $Id: gdb_lvl3.c 95 2006-08-26 17:34:00Z xavier $
+ * $Id: gdb_lvl3.c 107 2006-11-07 19:39:23Z xavier $
  */
 
 # ifdef HAVE_CLEWN
@@ -141,12 +141,15 @@ static int get_note __ARGS((gdb_T *, char_u *));
 static oobfunc_T oobfunc[] = {
     {gdb_get_pc},
     {gdb_get_frame},
-    {gdb_get_sfile},
     {gdb_get_sourcedir},
 #ifndef FEAT_GDB
+    {gdb_source_project},
+    {gdb_get_pwd},
+    {gdb_get_args},
     {gdb_source_cur},
     {gdb_source_list},
 #endif
+    {gdb_get_sfile},
     {gdb_info_frame},
     {gdb_stack_frame},	    /* after gdb_info_frame */
     {get_lastbp},	    /* after gdb_get_frame */
@@ -2157,6 +2160,137 @@ gdb_get_sourcedir(this, state, line, obs)
 
 #ifdef GDB_LVL3_SUPPORT
 #ifndef FEAT_GDB
+/* Source the project file */
+    char *
+gdb_source_project(this, state, line, obs)
+    gdb_T *this;
+    int state;
+    char_u *line;
+    struct obstack *obs;
+{
+    switch(state)
+    {
+	case OOB_CMD:
+	    if (this->project_file != NULL && cnb_state() && this->project_sourced == 0) {
+		this->project_sourced = 1;
+		fprintf(stderr, "source %s\n", this->project_file);
+
+		obstack_strcat(obs, "server source ");
+		obstack_strcat(obs, this->project_file);
+		obstack_strcat0(obs, "\n");
+		return (char_u *)obstack_finish(obs);
+	    }
+	    break;
+
+	case OOB_COLLECT:
+	    if (line != NULL)
+		fprintf(stderr, "%s\n", line);
+	    break;
+
+	case OOB_COMPLETE:
+	    /* this is required after 'restart' to display the gdb prompt */
+	    fprintf(stderr, this->prompt);
+	    break;
+    }
+
+    return NULL;
+}
+
+#   define CWD_VALUE	"^done,cwd=\""
+/* Get current working directory */
+    char *
+gdb_get_pwd(this, state, line, obs)
+    gdb_T *this;
+    int state;
+    char_u *line;
+    struct obstack *obs;
+{
+    char_u * res = NULL;
+    char_u * ptr;
+    char_u * quote;
+
+    if (obs) {}	    /* keep compiler happy */
+
+    switch(state)
+    {
+	case OOB_CMD:
+	    if (this->mode != GDB_MODE_LVL2) {
+		FREE(this->lvl3.result);
+		return "server interpreter-exec mi \"-environment-pwd\"\n";
+	    }
+	    break;
+
+	case OOB_COLLECT:
+	    gdb_cat(&res, this->lvl3.result);
+	    gdb_cat(&res, line);
+	    xfree(this->lvl3.result);
+	    this->lvl3.result = res;
+	    break;
+
+	case OOB_COMPLETE:
+	    if ((ptr = STRSTR(this->lvl3.result, CWD_VALUE)) != NULL
+		    && (ptr += strlen(CWD_VALUE))
+		    && (quote = strrchr(ptr, '"')) != NULL) {
+		*quote = NUL;
+		gdb_cat(&res, "cd ");
+		gdb_cat(&res, ptr);
+		gdb_cat(&res, "\n");
+		xfree(this->pwd);
+		this->pwd = res;
+	    }
+
+	    FREE(this->lvl3.result);
+	    break;
+    }
+    return NULL;
+}
+
+#   define ARGS_VALUE	"Argument list to give program being debugged when it is started is \""
+/* Get args */
+    char *
+gdb_get_args(this, state, line, obs)
+    gdb_T *this;
+    int state;
+    char_u *line;
+    struct obstack *obs;
+{
+    char_u * res = NULL;
+    char_u * ptr;
+    char_u * quote;
+
+    if (obs) {}	    /* keep compiler happy */
+
+    switch(state)
+    {
+	case OOB_CMD:
+	    FREE(this->lvl3.result);
+	    return "server show args\n";
+
+	case OOB_COLLECT:
+	    gdb_cat(&res, this->lvl3.result);
+	    gdb_cat(&res, line);
+	    xfree(this->lvl3.result);
+	    this->lvl3.result = res;
+	    break;
+
+	case OOB_COMPLETE:
+	    if ((ptr = STRSTR(this->lvl3.result, ARGS_VALUE)) != NULL
+		    && (ptr += strlen(ARGS_VALUE))
+		    && (quote = strrchr(ptr, '"')) != NULL) {
+		*quote = NUL;
+		gdb_cat(&res, "set args ");
+		gdb_cat(&res, ptr);
+		gdb_cat(&res, "\n");
+		xfree(this->args);
+		this->args = res;
+	    }
+
+	    FREE(this->lvl3.result);
+	    break;
+    }
+    return NULL;
+}
+
 /* Get GDB current source file */
     char *
 gdb_source_cur(this, state, line, obs)

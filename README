@@ -51,6 +51,12 @@ FEATURES
   (stepi, nexti) the program counter line within an assembly window is
   highlighted.
 
+* The project file stores the current gdb settings. They are automatically
+  sourced by clewn on gdb startup and saved by clewn when quitting or when
+  restarting gdb. These settings are the gdb current working directory, the
+  program file to debug, the command line arguments passed to this program
+  when run by gdb, and the list of breakpoints set in this program.
+
 * Depending on the GDB version you are using, Clewn may run in two different
   modes: level 2 when using GDB annotations level 2 and level 3 when using
   GDB/MI and the new annotations level 3. Mode selection is automatically done

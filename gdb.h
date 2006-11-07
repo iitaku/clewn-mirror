@@ -17,7 +17,7 @@
  * Free Software Foundation, Inc.,
  * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  *
- * $Id: gdb.h 101 2006-10-18 19:22:02Z xavier $
+ * $Id: gdb.h 107 2006-11-07 19:39:23Z xavier $
  */
 
 #ifndef GDB_H
@@ -423,6 +423,8 @@ struct gdb_struct
 #ifndef FEAT_GDB
     char_u *prompt;	/* the current GDB prompt */
     char * version;	/* clewn version */
+    char_u * pwd;	/* current working directory */
+    char_u * args;	/* debugge command line arguments */
 #endif
     char_u *sfile;	/* symbol file name */
 
@@ -468,6 +470,8 @@ struct gdb_struct
     int var_buf;	/* variables buffer number */
     char_u *var_name;	/* variables file name */
     char_u *balloon_txt;/* text over which is pointed the mouse */
+    char * project_file;/* project file name */
+    int project_sourced;/* TRUE when project file has been sourced by gdb */
 #endif
     oob_T oob;		/* out of band data */
 
@@ -593,6 +597,9 @@ char * gdb_info_frame __ARGS((gdb_T *, int, char_u *, struct obstack *));
 char * gdb_stack_frame __ARGS((gdb_T *, int, char_u *, struct obstack *));
 char * gdb_get_sfile __ARGS((gdb_T *, int, char_u *, struct obstack *));
 #ifndef FEAT_GDB
+char * gdb_source_project __ARGS((gdb_T *, int, char_u *, struct obstack *));
+char * gdb_get_pwd __ARGS((gdb_T *, int, char_u *, struct obstack *));
+char * gdb_get_args __ARGS((gdb_T *, int, char_u *, struct obstack *));
 char * gdb_source_cur __ARGS((gdb_T *, int, char_u *, struct obstack *));
 char * gdb_source_list __ARGS((gdb_T *, int, char_u *, struct obstack *));
 #endif
