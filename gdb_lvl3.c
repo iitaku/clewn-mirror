@@ -17,7 +17,7 @@
  * Free Software Foundation, Inc.,
  * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  *
- * $Id: gdb_lvl3.c 108 2006-11-12 17:35:51Z xavier $
+ * $Id: gdb_lvl3.c 111 2006-11-12 20:37:25Z xavier $
  */
 
 # ifdef HAVE_CLEWN
@@ -2191,6 +2191,9 @@ gdb_source_project(this, state, line, obs)
 	    break;
 
 	case OOB_COMPLETE:
+	    /* force getting the source file list from gdb */
+	    this->lvl3.get_source_list = TRUE;
+
 	    /* this is required after 'restart' to display the gdb prompt */
 	    fprintf(stderr, this->prompt);
 	    break;

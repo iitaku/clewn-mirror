@@ -1,6 +1,11 @@
 
 2006-11-12  Xavier de Gaye <xdegaye at users dot sourceforge dot net>
 
+	* clewn.c gdb_lvl3.c:
+	Get the source file list from gdb after a 'source' command, in
+	case the sourced command file includes a command loading a new
+	program.
+
 	* clewn.vim clewn.c:
 	When a project file is being used, a message is printed in Vim when
 	the user attempts to quit Vim, to warn him that the breakpoints will
