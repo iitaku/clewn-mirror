@@ -208,6 +208,10 @@ the case if gdb finds an error while setting a breakpoint: an error message is
 printed, but this does not prevent clewn from overwritting the project file
 the next time the command 'restart' is run, or on quitting.
 
+Note: The breakpoints are not saved to the project file when you quit Clewn
+from Vim. You must must quit Clewn by typing the 'quit' command in clewn, or by
+hitting the 'Q' key in Vim which is mapped to this same command.
+
 Note: When unloading a buffer with the Vim commands |:bdelete|, |:bunload| or
 |:bwipeout|, the breakpoints signs are deleted in Vim and in Clewn. The
 corresponding breakpoints are not saved to the project file.

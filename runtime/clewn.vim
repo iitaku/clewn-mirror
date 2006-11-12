@@ -35,10 +35,10 @@ autocmd BufWinEnter *.clasm silent! setlocal autoread
 " Warning message when using a project file
 autocmd VimLeavePre * if exists("clewn_project")
 	\ | echohl ErrorMsg
-	\ | echo "The breakpoints are not saved in the project file,"
+	\ | echo "The breakpoints are not saved to the project file,"
 	\ | echo "when you quit from Vim instead of quitting from Clewn."
 	\ | echo " "
-	\ | exe input("Do not hit return now, and quit Clewn to save the breakpoints in the project file.")
+	\ | exe input("It is safe to hit return when Clewn is closing or is terminated.")
 	\ | echohl None
 	\ | endif
 augroup END
