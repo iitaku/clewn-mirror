@@ -1,5 +1,11 @@
 
-2006-11-05  Xavier de Gaye <xdegaye at users dot sourceforge dot net>
+2006-11-12  Xavier de Gaye <xdegaye at users dot sourceforge dot net>
+
+	* clewn.vim clewn.c:
+	When a project file is being used, a message is printed in Vim when
+	the user attempts to quit Vim, to warn him that the breakpoints will
+	not be saved to the project file if he proceeds with the operation.
+
 
 	* clewn.c gdb.h gdb_lvl3.c:
 	the project file stores the current gdb settings. They are

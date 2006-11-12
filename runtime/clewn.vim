@@ -1,6 +1,6 @@
 " Clewn run time file
 " Maintainer:	<xdegaye at users dot sourceforge dot net>
-" Last Change:	20 Aug 2006
+" Last Change:	12 Nov 2006
 "
 " Setup VIM to be used with Clewn and NetBeans
 "
@@ -21,6 +21,7 @@ if has("balloon_eval")
     set balloondelay=100
 endif
 
+
 augroup clewn
 autocmd!
 " set options for gdb-variables.gdbvar
@@ -30,7 +31,18 @@ autocmd BufWinEnter *.gdbvar silent! set bufhidden=hide | set buftype=nowrite
 						    \ | setlocal wrap
 " set options for asm buffers
 autocmd BufWinEnter *.clasm silent! setlocal autoread
+
+" Warning message when using a project file
+autocmd VimLeavePre * if exists("clewn_project")
+	\ | echohl ErrorMsg
+	\ | echo "The breakpoints are not saved in the project file,"
+	\ | echo "when you quit from Vim instead of quitting from Clewn."
+	\ | echo " "
+	\ | exe input("Do not hit return now, and quit Clewn to save the breakpoints in the project file.")
+	\ | echohl None
+	\ | endif
 augroup END
+
 
 let s:clewn_tmpfile=tempname() . ".clewn-watched-vars.gdbvar"
 

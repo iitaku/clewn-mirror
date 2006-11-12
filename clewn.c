@@ -17,7 +17,7 @@
  * Free Software Foundation, Inc.,
  * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  *
- * $Id: clewn.c 108 2006-11-12 17:35:51Z xavier $
+ * $Id: clewn.c 109 2006-11-12 18:25:23Z xavier $
  */
 
 #include <config.h>
@@ -1255,7 +1255,10 @@ module_init()
 	/* build gvim and gdb exec strings */
 	gdb_cat(&p_vim, p_vc);
 	gdb_cat(&p_vim, GVIM_DEFAULT_ARG);
+	if (p_project != NULL)
+	    gdb_cat(&p_vim, "-c \"let clewn_project=1\" ");
 	gdb_cat(&p_vim, p_va);
+
 	gdb_cat(&p_gdb, p_gc);
 	gdb_cat(&p_gdb, " ");
 	gdb_cat(&p_gdb, p_ga);

@@ -1,4 +1,4 @@
-*clewn.txt*                                       Last change: 2006 Nov 5
+*clewn.txt*                                       Last change: 2006 Nov 12
 
 
 			      CLEWN USER MANUAL
@@ -207,6 +207,10 @@ directory, or because it cannot load the program file to debug. This is not
 the case if gdb finds an error while setting a breakpoint: an error message is
 printed, but this does not prevent clewn from overwritting the project file
 the next time the command 'restart' is run, or on quitting.
+
+Note: When unloading a buffer with the Vim commands |:bdelete|, |:bunload| or
+|:bwipeout|, the breakpoints signs are deleted in Vim and in Clewn. The
+corresponding breakpoints are not saved to the project file.
 
 
 						    *clewn-netbeans*
