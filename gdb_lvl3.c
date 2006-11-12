@@ -17,7 +17,7 @@
  * Free Software Foundation, Inc.,
  * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  *
- * $Id: gdb_lvl3.c 107 2006-11-07 19:39:23Z xavier $
+ * $Id: gdb_lvl3.c 108 2006-11-12 17:35:51Z xavier $
  */
 
 # ifdef HAVE_CLEWN
@@ -1857,7 +1857,8 @@ gdb_print_value(this, state, line, obs)
 	    break;
 
 	case OOB_COMPLETE:
-	    if ((ptr = STRSTR(this->lvl3.result, PRINT_VALUE)) != NULL
+	    if (this->lvl3.result != NULL
+		    && (ptr = STRSTR(this->lvl3.result, PRINT_VALUE)) != NULL
 		    && (ptr += strlen(PRINT_VALUE))
 		    && (quote = strrchr(ptr, '"')) != NULL)
 	    {
@@ -1947,15 +1948,13 @@ gdb_get_frame(this, state, line, obs)
 
 	case OOB_COMPLETE:
 	    xfree(this->frame_pc);
-	    if ((this->frame_pc = gdb_regexec(this->oob_result, PAT_FRAME, 1, NULL)) != NULL)
-	    {
+	    if (this->oob_result != NULL
+		    && (this->frame_pc = gdb_regexec(this->oob_result, PAT_FRAME, 1, NULL)) != NULL) {
 		xfree(this->asm_add);
 		this->asm_add = (char_u *)clewn_strsave(this->frame_pc);
 	    }
-	    else
-	    {
-		if (this->pc != NULL)
-		{
+	    else {
+		if (this->pc != NULL) {
 		    this->frame_pc = (char_u *)clewn_strsave(this->pc);
 		    xfree(this->asm_add);
 		    this->asm_add = (char_u *)clewn_strsave(this->frame_pc);
@@ -1996,8 +1995,8 @@ gdb_info_frame(this, state, line, obs)
 
 	case OOB_COMPLETE:
 	    this->frame_curlvl = -1;
-	    if ((res = gdb_regexec(this->lvl3.result, PAT_INFO_FRAME, 1, NULL)) != NULL)
-	    {
+	    if (this->lvl3.result != NULL
+		    && (res = gdb_regexec(this->lvl3.result, PAT_INFO_FRAME, 1, NULL)) != NULL) {
 		this->frame_curlvl = atoi(res);
 		xfree(res);
 	    }
@@ -2051,7 +2050,8 @@ gdb_stack_frame(this, state, line, obs)
 	    break;
 
 	case OOB_COMPLETE:
-	    if ((ptr = STRSTR(this->lvl3.result, SOURCE_FILENAME)) != NULL
+	    if (this->lvl3.result != NULL
+		    && (ptr = STRSTR(this->lvl3.result, SOURCE_FILENAME)) != NULL
 		    && (pnum = STRSTR(this->lvl3.result, SOURCE_LINENUM)) != NULL)
 	    {
 		pnum += strlen(SOURCE_FILENAME);
@@ -2171,8 +2171,11 @@ gdb_source_project(this, state, line, obs)
     switch(state)
     {
 	case OOB_CMD:
-	    if (this->project_file != NULL && cnb_state() && this->project_sourced == 0) {
-		this->project_sourced = 1;
+	    if (this->project_file != NULL
+		    && cnb_state()
+		    && this->project_state == PROJ_SOURCEIT)
+	    {
+		this->project_state = PROJ_DONE;
 		fprintf(stderr, "source %s\n", this->project_file);
 
 		obstack_strcat(obs, "server source ");
@@ -2228,9 +2231,11 @@ gdb_get_pwd(this, state, line, obs)
 	    break;
 
 	case OOB_COMPLETE:
-	    if ((ptr = STRSTR(this->lvl3.result, CWD_VALUE)) != NULL
+	    if (this->lvl3.result != NULL
+		    && (ptr = STRSTR(this->lvl3.result, CWD_VALUE)) != NULL
 		    && (ptr += strlen(CWD_VALUE))
-		    && (quote = strrchr(ptr, '"')) != NULL) {
+		    && (quote = strrchr(ptr, '"')) != NULL)
+	    {
 		*quote = NUL;
 		gdb_cat(&res, "cd ");
 		gdb_cat(&res, ptr);
@@ -2274,9 +2279,11 @@ gdb_get_args(this, state, line, obs)
 	    break;
 
 	case OOB_COMPLETE:
-	    if ((ptr = STRSTR(this->lvl3.result, ARGS_VALUE)) != NULL
+	    if (this->lvl3.result != NULL
+		    && (ptr = STRSTR(this->lvl3.result, ARGS_VALUE)) != NULL
 		    && (ptr += strlen(ARGS_VALUE))
-		    && (quote = strrchr(ptr, '"')) != NULL) {
+		    && (quote = strrchr(ptr, '"')) != NULL)
+	    {
 		*quote = NUL;
 		gdb_cat(&res, "set args ");
 		gdb_cat(&res, ptr);
@@ -3322,7 +3329,8 @@ varobj_complete(this, obs)
 	{
 	    case VCMD_CREATE:
 		/* result of object creation */
-		if ((ptr = STRSTR(this->lvl3.result, VOBJ_NAME)) != NULL
+		if (this->lvl3.result != NULL
+			&& (ptr = STRSTR(this->lvl3.result, VOBJ_NAME)) != NULL
 			&& (ptr += strlen(VOBJ_NAME))
 			&& (quote = STRCHR(ptr, '"')) != NULL
 			&& (child = STRSTR(this->lvl3.result, VOBJ_CHILD)) != NULL)
@@ -3358,7 +3366,8 @@ varobj_complete(this, obs)
 		return (char_u *)obj;   /* next command */
 
 	    case VCMD_UPDATE:
-		if ((ptr = STRSTR(this->lvl3.result, VOBJ_SCOPE)) != NULL)
+		if (this->lvl3.result != NULL
+			&&(ptr = STRSTR(this->lvl3.result, VOBJ_SCOPE)) != NULL)
 		{
 		    ptr += strlen(VOBJ_SCOPE);
 		    if ((STRSTR(ptr, "false")) == ptr)
@@ -3394,14 +3403,16 @@ varobj_complete(this, obs)
 		}
 		
 		/* build the display line including ={*}, the hiliting sign */
-		obstack_strcat(obs, obj->name);
-		obstack_strcat(obs, ":");
-		obstack_strcat(obs, obj->format);
-		obstack_strcat(obs, " ");
-		obstack_strcat(obs, obj->expression);
-		obstack_strcat(obs, " ={*} ");
-		obstack_strcat0(obs, this->lvl3.result);
-		displine = (char_u *)obstack_finish(obs);
+		if (this->lvl3.result != NULL) {
+		    obstack_strcat(obs, obj->name);
+		    obstack_strcat(obs, ":");
+		    obstack_strcat(obs, obj->format);
+		    obstack_strcat(obs, " ");
+		    obstack_strcat(obs, obj->expression);
+		    obstack_strcat(obs, " ={*} ");
+		    obstack_strcat0(obs, this->lvl3.result);
+		    displine = (char_u *)obstack_finish(obs);
+		}
 
 		/* add the newly created object to variables window */
 		if (obj->state & VS_INIT)
@@ -3455,7 +3466,8 @@ varobj_complete(this, obs)
 		goto nextobj;
 
 	    case VCMD_EVALUATE:
-		if ((ptr = STRSTR(this->lvl3.result, VOBJ_VALUE)) != NULL
+		if (this->lvl3.result != NULL
+			&& (ptr = STRSTR(this->lvl3.result, VOBJ_VALUE)) != NULL
 			&& (ptr += strlen(VOBJ_VALUE))
 			&& (quote = strrchr(ptr, '"')) != NULL)
 		{

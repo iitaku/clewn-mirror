@@ -17,7 +17,7 @@
  * Free Software Foundation, Inc.,
  * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  *
- * $Id: clewn.c 107 2006-11-07 19:39:23Z xavier $
+ * $Id: clewn.c 108 2006-11-12 17:35:51Z xavier $
  */
 
 #include <config.h>
@@ -133,6 +133,7 @@ static char_u *preprompt;	/* previous prompt line when prompt is multi line */
 static char_u *cplt_prmpt;	/* current prompt for completion */
 static int nl_output;		/* when TRUE, no need to output a newline */
 static char_u *key_command;	/* command mapped from NetBeans key */
+static int inside_readline = FALSE; /* TRUE when cli_getc() is called by readline() */
 
 #define FUNMAP_SIZE 20
 #define CLEWN_KEYMAP_SIZE (256 + FUNMAP_SIZE)
@@ -576,8 +577,12 @@ main(int argc, char ** argv)
 	    fputs("\n", rl_outstream);
 	nl_output = TRUE;
 
+	inside_readline = TRUE;
+
 	if ((line = (char_u *)readline(gdb->prompt)) == NULL)
 	    break;
+
+	inside_readline = FALSE;
 
 	if (gdb->note == ANO_PMT_FORMORE)
 	{
@@ -690,6 +695,18 @@ cli_getc(instream)
     do
     {
 	ret = -1;
+
+	/* Source the project file when the netbeans session is up,
+	 * so that we can set the breakpoints in vim */
+	if (gdb->project_file != NULL
+		&& gdb->project_state == PROJ_INIT
+		&& ! IS_OOBACTIVE(gdb)
+		&& inside_readline
+		&& cnb_state())
+	{
+	    gdb->project_state = PROJ_SOURCEIT;
+	    gdb_docmd((gdb_handle_T *)gdb, "");
+	}
 
 	/* GDB still running */
 	if (got_sigchld || gdb->pid == -1)
@@ -948,14 +965,6 @@ cli_getc(instream)
 		rl_forced_update_display();
 	}
 #endif
-	/* For the first execution of gdb, source the project file
-	 * when the netbeans session is up, so that we can set the breakpoints in vim.
-	 * The following gdb instances (spawned after restart) assume
-	 * netbeans is already connected, otherwise the user will have to
-	 * hit <CR> to source the project file */
-	if (gdb->instance == 1 && cnb_state() && gdb->project_file != NULL && gdb->project_sourced == 0)
-	    gdb_docmd((gdb_handle_T *)gdb, "");
-
     } while ((ret == 0 || (ret < 0 && errno == EINTR)) && IS_NETBEANS_CONNECTED);
 
     if (ret > 0)
@@ -1196,7 +1205,7 @@ start_gdb_process()
 	return;
 
     gdb->project_file = p_project;
-    gdb->project_sourced = 0;
+    gdb->project_state = PROJ_INIT;
 
     exec_gdb();
 

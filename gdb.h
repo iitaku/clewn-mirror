@@ -17,7 +17,7 @@
  * Free Software Foundation, Inc.,
  * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  *
- * $Id: gdb.h 107 2006-11-07 19:39:23Z xavier $
+ * $Id: gdb.h 108 2006-11-12 17:35:51Z xavier $
  */
 
 #ifndef GDB_H
@@ -394,6 +394,11 @@ typedef struct {
 #define PS_PREPROMPT	1	/* before the prompt, after any output from GDB */
 #define PS_PROMPT	2	/* after prompt, but before user input */
 
+/* project file sourced states */
+#define PROJ_INIT	0
+#define PROJ_SOURCEIT	1
+#define PROJ_DONE	2
+
 /* The gdb structure */
 struct gdb_struct
 {
@@ -471,7 +476,7 @@ struct gdb_struct
     char_u *var_name;	/* variables file name */
     char_u *balloon_txt;/* text over which is pointed the mouse */
     char * project_file;/* project file name */
-    int project_sourced;/* TRUE when project file has been sourced by gdb */
+    int project_state;	/* project file sourced state */
 #endif
     oob_T oob;		/* out of band data */
 
