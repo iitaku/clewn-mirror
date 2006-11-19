@@ -17,7 +17,7 @@
  * Free Software Foundation, Inc.,
  * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  *
- * $Id: netbeans.c 93 2006-08-26 17:14:47Z xavier $
+ * $Id: netbeans.c 112 2006-11-19 19:32:21Z xavier $
  */
 
 #include <config.h>
@@ -150,7 +150,7 @@ static int get_evt __ARGS((char_u *, int *, char_u **));
 static void send_cmd __ARGS((int, char_u *, char_u *));
 static void send_function __ARGS((int, char_u *, char_u *));
 static pathmap_T * pm_parse __ARGS((char *));
-static char_u * pm_mapto_vim __ARGS((char_u *, struct obstack *));
+static char_u * pm_mapto_vim __ARGS((char_u *, char_u *, char_u *, char_u *, struct obstack *));
 static char_u * pm_mapto_gdb __ARGS((char_u *, struct obstack *));
 static char_u * get_fullpath __ARGS((char_u *, char_u *, char_u *, char_u *, struct obstack *));
 static char_u * unquote __ARGS((char_u *, char_u **, struct obstack *));
@@ -1174,12 +1174,12 @@ cnb_editFile(name, lnum, sourcedir, source_cur, source_list, obs)
     if (cnb->debug)
 	fprintf(stderr, "gdb source file name: \"%s\"\n", name);
 
-    /* do not stat() source filenames if remote debugging */
     if (cnb->remote_map)
-	pathname = pm_mapto_vim(name, obs);
-    /* get the first existing full path name in GDB source directories
-     * matching this name */
+	/* map source filenames when doing remote debugging */
+	pathname = pm_mapto_vim(name, sourcedir, source_cur, source_list, obs);
     else
+	/* get the first existing full path name in GDB source directories
+	 * matching this name */
 	pathname = get_fullpath(name, sourcedir, source_cur, source_list, obs);
 
     if (pathname == NULL)
@@ -1468,20 +1468,73 @@ pm_parse(pathnames_map)
     return pathmap;
 }
 
+#define GDB_CDIR    "$cdir"
+#define GDB_CWD	    "$cwd"
 /*
  * For each mapping in the remote_map array, if gdb_path is a prefix
  * or is the empty string, then replace it with vim_path
  */
     static char_u *
-pm_mapto_vim(name, obs)
+pm_mapto_vim(name, sourcedir, source_cur, source_list, obs)
     char_u *name;	/* file name */
+    char_u *sourcedir;	/* GDB source directories */
+    char_u *source_cur;	/* GDB current source */
+    char_u *source_list;/* GDB source list */
     struct obstack *obs;
 {
+    char_u *pathname = name;
+    char_u *ptr = sourcedir;
     pathmap_T * m;
-    char_u *ptr;
+    char_u *next;
+    char_u *hay;
+    char_u *found;
+    char_u *end;
 
+    /* first, get the full path name from gdb when the gdb variable 'directories'
+     * contains the compilation directory "$cdir" */
+    do {
+	if (sourcedir == NULL)
+	    break;
+
+	if ((next = STRCHR(ptr, ':')) != NULL)
+	    *next++ = NUL;
+
+	/* compilation directory */
+	if (STRCMP(ptr, GDB_CDIR) == 0) {
+	    /* hay: file="NAME",fullname=" */
+	    obstack_strcat(obs, "file=\"");
+	    obstack_strcat(obs, name);
+	    obstack_strcat0(obs, "\",fullname=\"");
+	    hay = (char_u *)obstack_finish(obs);
+
+	    /* name is the current sourcefile: use gdb compilation directory */
+	    if (source_cur != NULL && (found=STRSTR(source_cur, hay)) != NULL ){
+		found += STRLEN(hay);
+		if ((end=STRSTR(found, "\"")) != NULL) {
+		    pathname = (char_u *)obstack_copy0(obs, found, end - found);
+		    break;
+		}
+	    }
+
+	    /* lookup for first occurence of name in source list */
+	    if (source_list != NULL && (found=STRSTR(source_list, hay)) != NULL ){
+		found += STRLEN(hay);
+		if ((end=STRSTR(found, "\"")) != NULL)
+		    pathname = (char_u *)obstack_copy0(obs, found, end - found);
+	    }
+
+	    break;
+	}
+
+	ptr = next;
+
+    } while (ptr != NULL && *ptr != NUL);
+
+    /* map the path name */
     for (m=cnb->remote_map; m != NULL && m->gdb_path != NULL; m++) {
-	if ((ptr=STRSTR(name, m->gdb_path)) == name || ((ptr=name) && *(m->gdb_path) == NUL)) {
+	if ((ptr=STRSTR(pathname, m->gdb_path)) == pathname
+		|| ((ptr=pathname) && *(m->gdb_path) == NUL))
+	{
 	    ptr += STRLEN(m->gdb_path);
 	    obstack_strcat(obs, m->vim_path);
 	    obstack_strcat0(obs, ptr);
@@ -1489,7 +1542,7 @@ pm_mapto_vim(name, obs)
 	}
     }
 
-    return name;
+    return pathname;
 }
 
 /*
@@ -1517,8 +1570,6 @@ pm_mapto_gdb(name, obs)
     return (char_u *)clewn_strsave(name);
 }
 
-#define GDB_CDIR    "$cdir"
-#define GDB_CWD	    "$cwd"
 /*
  * Get a full path name for the file named 'name'.
  * If name is an absolute path, just stat it. Otherwise, add name to

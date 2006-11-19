@@ -1,5 +1,13 @@
 
-2006-11-12  Xavier de Gaye <xdegaye at users dot sourceforge dot net>
+2006-11-19  Xavier de Gaye <xdegaye at users dot sourceforge dot net>
+
+	* netbeans.c:
+	When $cdir is set in the gdb directories variable (the default),clewn
+	uses the source full path name instead of the short name in remote
+	debugging, to map the gdb path name to the vim path name. The list of
+	source full path names can be obtained with the gdb command
+	'interpreter-exec mi "-file-list-exec-source-files"'
+
 
 	* clewn.c gdb_lvl3.c:
 	Get the source file list from gdb after a 'source' command, in
@@ -13,7 +21,7 @@
 
 
 	* clewn.c gdb.h gdb_lvl3.c:
-	the project file stores the current gdb settings. They are
+	The project file stores the current gdb settings. They are
 	automatically sourced by clewn on gdb startup and saved by clewn when
 	quitting or when restarting gdb. These settings are the gdb current
 	working directory, the program file to debug, the command line
