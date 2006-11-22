@@ -17,7 +17,7 @@
  * Free Software Foundation, Inc.,
  * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  *
- * $Id: clewn.c 111 2006-11-12 20:37:25Z xavier $
+ * $Id: clewn.c 113 2006-11-22 18:56:32Z xavier $
  */
 
 #include <config.h>
@@ -1765,9 +1765,11 @@ clewn_keymap()
 write_project()
 {
     char_u * res = NULL;
+    int bp_count = 0;
     FILE *stream;
     bpinfo_T *p;
     char_u * source_file;
+    int lnum;
 
     if (gdb->project_file == NULL)	/* no project file */
 	return;
@@ -1794,13 +1796,24 @@ write_project()
 
 	for (p = gdb->bpinfo; p != NULL; p = p->next) {
 	    if ((source_file=cnb_filename(p->buf)) != NULL) {
+		bp_count++;
+		lnum = (int)p->lnum;
 		gdb_cat(&res, "break ");
 		gdb_cat(&res, source_file);
 		gdb_cat(&res, ":");
-		gdb_cat(&res, gdb_itoa((int)p->lnum));
+		gdb_cat(&res, gdb_itoa(lnum));
 		gdb_cat(&res, "\n");
 		fputs(res, stream);	/* breakpoint */
 		FREE(res);
+
+		/* handle disabled breakpoints */
+		if (! p->enabled) {
+		    gdb_cat(&res, "disable ");
+		    gdb_cat(&res, gdb_itoa(bp_count));
+		    gdb_cat(&res, "\n");
+		    fputs(res, stream);	/* disabled breakpoint */
+		    FREE(res);
+		}
 	    }
 	}
 

@@ -1,4 +1,4 @@
-*clewn.txt*                                       Last change: 2006 Nov 19
+*clewn.txt*                                       Last change: 2006 Nov 22
 
 
 			      CLEWN USER MANUAL
@@ -300,6 +300,7 @@ When the gdb variable 'directories' contains the compilation directory '$cdir'
 (this is the default, use the gdb command 'show directories' to print the
 value of this variable), the full path name of the source file, as known at
 compile time, is used before doing the previous substitution operation.
+This is only available with GDB 6.2.1 or with a more recent gdb release.
 
 To get the full list of the source files and their full path name, run the gdb
 command:
