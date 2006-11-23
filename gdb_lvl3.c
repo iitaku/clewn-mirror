@@ -17,7 +17,7 @@
  * Free Software Foundation, Inc.,
  * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  *
- * $Id: gdb_lvl3.c 111 2006-11-12 20:37:25Z xavier $
+ * $Id: gdb_lvl3.c 115 2006-11-23 19:03:03Z xavier $
  */
 
 # ifdef HAVE_CLEWN
@@ -2177,6 +2177,9 @@ gdb_source_project(this, state, line, obs)
 	    {
 		this->project_state = PROJ_DONE;
 		fprintf(stderr, "source %s\n", this->project_file);
+
+		if (this->sfile != NULL)
+		    fprintf(stderr, "Warning: symbol table \"%s\" was loaded before sourcing the project file\n", this->sfile);
 
 		obstack_strcat(obs, "server source ");
 		obstack_strcat(obs, this->project_file);

@@ -1,5 +1,8 @@
 
-2006-11-22  Xavier de Gaye <xdegaye at users dot sourceforge dot net>
+2006-11-23  Xavier de Gaye <xdegaye at users dot sourceforge dot net>
+
+	* gdb_lvl3.c: file loaded from the project file overwrites the
+	file loaded from the command line, warn the user
 
 	* clewn.h clewn.c netbeans.c:
 	Use the new netbeans 2.4 getAnno function (vim patch 163) to get the
