@@ -17,7 +17,7 @@
  * Free Software Foundation, Inc.,
  * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  *
- * $Id: clewn.c 113 2006-11-22 18:56:32Z xavier $
+ * $Id: clewn.c 114 2006-11-23 18:43:11Z xavier $
  */
 
 #include <config.h>
@@ -1797,7 +1797,12 @@ write_project()
 	for (p = gdb->bpinfo; p != NULL; p = p->next) {
 	    if ((source_file=cnb_filename(p->buf)) != NULL) {
 		bp_count++;
-		lnum = (int)p->lnum;
+
+		/* get the new sign position in the vim buffer */
+		lnum = cnb_buf_getsign(p->buf, BP_SIGN_ID(p->id));
+		if (lnum == 0)
+		    lnum = (int)p->lnum;    /* use the original value */
+
 		gdb_cat(&res, "break ");
 		gdb_cat(&res, source_file);
 		gdb_cat(&res, ":");

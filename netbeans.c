@@ -17,7 +17,7 @@
  * Free Software Foundation, Inc.,
  * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  *
- * $Id: netbeans.c 112 2006-11-19 19:32:21Z xavier $
+ * $Id: netbeans.c 114 2006-11-23 18:43:11Z xavier $
  */
 
 #include <config.h>
@@ -35,6 +35,7 @@
 
 #define NETBEANS_REQSTED_VERSION    "2.1"
 #define NETBEANS_SPECIALKEYS_VERSION "2.3"
+#define NETBEANS_GETANNO_VERSION    "2.4"
 #define BUFF_ALLOC_INCREMENT	    20
 #define MAXMSGSIZE		    4096
 
@@ -112,6 +113,7 @@ typedef struct
 #define NBS_DISCONN	0x08
 #define NBS_CLOSING	0x10
 #define NBS_SPECIALKEYS	0x20
+#define NBS_GETANNO	0x40
 
 /* The Clewn NetBeans structure */
 typedef struct
@@ -140,7 +142,7 @@ typedef struct
 } cnb_T;
 
 static cnb_T *cnb;		    /* the cnb_T instance */
-static nb_event_T cnb_key;	    /* NetBeans key */
+static nb_event_T cnb_event;	    /* netbeans event */
 static char cnb_buf[MAXMSGSIZE];    /* buffer for reading NetBeans messages */
 
 /* Forward declarations */
@@ -304,12 +306,13 @@ cnb_close()
 
     (void)obstack_init(&obs);
 
-    /* free the allocated cnb_key fields */
-    FREE(cnb_key.key);
-    FREE(cnb_key.lnum);
-    FREE(cnb_key.pathname);
-    FREE(cnb_key.text);
-    cnb_key.text_event = FALSE;
+    /* free the allocated cnb_event fields */
+    FREE(cnb_event.key);
+    FREE(cnb_event.lnum);
+    FREE(cnb_event.pathname);
+    FREE(cnb_event.text);
+    cnb_event.text_event = FALSE;
+    cnb_event.seqno = 0;
 
     if (cnb->fdcon != -1)
     {
@@ -525,7 +528,7 @@ cnb_data_evt()
 	return NULL;
 
     /* key has been consumed */
-    FREE(cnb_key.key);
+    FREE(cnb_event.key);
 
     if ((len = read(cnb->fdata, cnb_buf, MAXMSGSIZE - 1)) == 0)
     {
@@ -577,13 +580,13 @@ cnb_data_evt()
 	    cnb->line = (char_u *)clewn_strsave(start);
 	    obstack_free(&obs, NULL);
 
-	    return &cnb_key;
+	    return &cnb_event;
 	}
 	FREE(cnb->line);
 	obstack_free(&obs, NULL);
     }
 
-    return &cnb_key;
+    return &cnb_event;
 }
 
 /*
@@ -604,14 +607,13 @@ parse_msg(event, obs)
     char *tmp;
     int bufno;
     int offset;
-    int seqno;
 
     /* parse NetBeans connection setup events */
     if (! (cnb->state & NBS_READY))
 	return conn_setup(event, obs);
 
     /* NetBeans ready and running */
-    seqno = (int)strtol(event, &tmp, 10);
+    cnb_event.seqno = (int)strtol(event, &tmp, 10);
     next = (char_u *)tmp;
 
     /*
@@ -619,9 +621,15 @@ parse_msg(event, obs)
      */
     if (next != event && (*next == ' ' || *next == NUL))
     {
+	if (*next == ' ')
+	    next++;
+	FREE(cnb_event.text);
+	cnb_event.text_event = FALSE;
+	cnb_event.text = (char_u *)clewn_strsave(next);
+
 	/* handle acknowledgements for var_buf */
-	if ((buf = getbuf(*cnb->pvar_buf)) != NULL && seqno != 0
-		&& seqno >= cnb->first_noaq && seqno <= cnb->last_noaq)
+	if ((buf = getbuf(*cnb->pvar_buf)) != NULL && cnb_event.seqno != 0
+		&& cnb_event.seqno >= cnb->first_noaq && cnb_event.seqno <= cnb->last_noaq)
 	{
 	    if (*(next + 1) == '!')
 	    {
@@ -632,7 +640,7 @@ parse_msg(event, obs)
 	    }
 
 	    /* all functions acknowledged */
-	    if (seqno == cnb->last_noaq)
+	    if (cnb_event.seqno == cnb->last_noaq)
 	    {
 		cnb->first_noaq = 0;
 		cnb->last_noaq = 0;
@@ -655,7 +663,7 @@ parse_msg(event, obs)
 	    if ((pathname = unquote(args, &next, obs)) != NULL)
 	    {
 		/* unvalidate balloon text */
-		FREE(cnb_key.text);
+		FREE(cnb_event.text);
 
 		if (*next == ' ' && *(next + 1) == 'T'
 			&& STRCMP(pathname, "(null)") != 0)
@@ -706,15 +714,15 @@ parse_msg(event, obs)
 	 * on some text for a moment
 	 */
 	case EVT_BALLOONTEXT:
-	    FREE(cnb_key.text);
+	    FREE(cnb_event.text);
 	    if ((args = unquote(args, &next, obs)) == NULL)
 	    {
 		if (cnb->debug)
 		    fprintf(stderr, "parse error in EVT_BALLOONTEXT in parse_msg()\n");
 	    }
 	    else {
-		cnb_key.text = (char_u *)clewn_strsave(args);
-		cnb_key.text_event = TRUE;
+		cnb_event.text = (char_u *)clewn_strsave(args);
+		cnb_event.text_event = TRUE;
 	    }
 	    break;
 
@@ -725,10 +733,10 @@ parse_msg(event, obs)
 	 * and also reports the line number and column of the cursor
 	 */
 	case EVT_KEYATPOS:
-	    FREE(cnb_key.key);
+	    FREE(cnb_event.key);
 	    if ((args = unquote(args, &next, obs)) != NULL)
 	    {
-		cnb_key.key = (char_u *)clewn_strsave(args);
+		cnb_event.key = (char_u *)clewn_strsave(args);
 		
 		/* skip offset and parse line number */
 		if (*next++ == ' ' && (next = STRCHR(next, ' ')) != NULL
@@ -739,22 +747,22 @@ parse_msg(event, obs)
 		    /* get buffer name */
 		    if ((buf = getbuf(bufno)) != NULL)
 		    {
-			xfree(cnb_key.lnum);
-			cnb_key.lnum = (char_u *)clewn_strsave(next);
+			xfree(cnb_event.lnum);
+			cnb_event.lnum = (char_u *)clewn_strsave(next);
 
 			if (cnb->debug)
 			    fprintf(stderr, "vim source file name: \"%s\"\n", buf->name);
 
-			xfree(cnb_key.pathname);
+			xfree(cnb_event.pathname);
 			if (cnb->remote_map)
-			    cnb_key.pathname = pm_mapto_gdb(buf->name, obs);
+			    cnb_event.pathname = pm_mapto_gdb(buf->name, obs);
 			else
-			    cnb_key.pathname = clewn_strsave(buf->name);
+			    cnb_event.pathname = clewn_strsave(buf->name);
 
 			return OK;
 		    }
 		}
-		FREE(cnb_key.key);
+		FREE(cnb_event.key);
 	    }
 
 	    if (cnb->debug)
@@ -870,6 +878,8 @@ conn_setup(event, obs)
 		    cnb->state |= NBS_VERSION;
 		    if (STRCMP(version, NETBEANS_SPECIALKEYS_VERSION) >= 0)
 			cnb->state |= NBS_SPECIALKEYS;
+		    if (STRCMP(version, NETBEANS_GETANNO_VERSION) >= 0)
+			cnb->state |= NBS_GETANNO;
 
 		    return OK;
 		}
@@ -1387,6 +1397,84 @@ cnb_buf_addsign(bufno, id, typenr, lnum, obs)
     /* note the last position */
     cnb->cur_buf = bufno;
     cnb->cur_line = (int)lnum;
+}
+
+#define GETANNO_TIMEOUT 600
+/* Return the sign line number.
+ * return 0 when error (0 is an illegal line number) */
+    int
+cnb_buf_getsign(bufno, id)
+    int bufno;	    /* buffer number */
+    int id;	    /* sign id (1:frame or BP_SIGN_ID(bp_id)) */
+{
+    int wtime = GETANNO_TIMEOUT;    /* msecs */
+    char_u arg[NUMBUFLEN];
+    int lnum;
+    int seqno;
+    int rc;
+#ifndef HAVE_SELECT
+    struct pollfd fds;
+#else
+    struct timeval tv;
+    struct timeval start_tv;
+    fd_set rfds;
+# ifdef HAVE_GETTIMEOFDAY
+    gettimeofday(&start_tv, NULL);
+# endif
+#endif
+
+    /* require a recent version of the netbeans protocol */
+    if (cnb == NULL || cnb->fdata == -1 || ! (cnb->state & NBS_READY) || ! (cnb->state & NBS_GETANNO))
+	return 0;
+
+    if (getbuf(bufno) == NULL || id == FRAME_SIGN || id <= 0)
+	return 0;
+
+    /* send the nebeans function */
+    sprintf(arg, "%d", id);
+    send_function(bufno, "getAnno", arg);
+    seqno = cnb->seqno;
+
+    /* listen for the reply to the function */
+    lnum = 0;
+    while (wtime > 0) {
+# ifndef HAVE_SELECT
+	fds.fd = cnb->fdata;
+	fds.events = POLLIN;
+
+	rc = poll(&fds, 1, wtime);
+# else
+	FD_ZERO(&rfds);
+	FD_SET(cnb->fdata, &rfds);
+
+	tv.tv_sec = 0;
+	tv.tv_usec = wtime * 1000;
+
+	rc = select(cnb->fdata + 1, &rfds, NULL, NULL, &tv);
+# endif
+
+	if ((rc == -1 && errno != EINTR) || rc == 0)
+	    break;
+	else if (rc > 0 && cnb_data_evt() != NULL && cnb_event.seqno == seqno) {
+	    if(cnb_event.text != NULL)
+		lnum = atoi(cnb_event.text);
+	    break;
+	}
+
+	/* compute remaining wait time */
+# if ! defined(HAVE_SELECT) || ! defined(HAVE_GETTIMEOFDAY)
+	/* guess: interrupted halfway, gdb processing 10 msecs */
+	wtime = wtime / 2 - 10L;
+# else
+	gettimeofday(&tv, NULL);
+	wtime -= (tv.tv_sec - start_tv.tv_sec) * 1000L
+			+ (tv.tv_usec - start_tv.tv_usec) / 1000L;
+	start_tv.tv_sec = tv.tv_sec;
+	start_tv.tv_usec = tv.tv_usec;
+# endif
+    }
+
+    return lnum;
 }
 
 /* Delete a sign in a buffer. */

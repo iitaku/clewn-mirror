@@ -17,7 +17,7 @@
  * Free Software Foundation, Inc.,
  * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  *
- * $Id: clewn.h 93 2006-08-26 17:14:47Z xavier $
+ * $Id: clewn.h 114 2006-11-23 18:43:11Z xavier $
  */
 
 #ifndef CLEWN_H
@@ -156,7 +156,8 @@ typedef struct
     char_u *lnum;	/* allocated line number */
     char_u *pathname;	/* allocated buffer name */
     char_u *text;	/* allocated balloon text */
-    int	    text_event;	/* TRUE after receiving a balloonText netbeans event */
+    int text_event;	/* TRUE after receiving a balloonText netbeans event */
+    int seqno;		/* netbeans event or reply sequence number */
 } nb_event_T;
 
 extern int p_asm;		    /* assembly support when non zero */
@@ -198,6 +199,7 @@ void cnb_endAtomic __ARGS((int));
 int cnb_editFile __ARGS((char_u *, linenr_T, char_u *, char_u *, char_u *, struct obstack *));
 int cnb_define_sign __ARGS((int, int, int, struct obstack *));
 void cnb_buf_addsign __ARGS((int, int, int, linenr_T, struct obstack *));
+int cnb_buf_getsign __ARGS((int, int));
 void cnb_buf_delsign __ARGS((int, int));
 int cnb_create_buf __ARGS((char_u *));
 void cnb_kill __ARGS((int));

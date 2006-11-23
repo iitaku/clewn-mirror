@@ -1,5 +1,9 @@
 
-2006-11-19  Xavier de Gaye <xdegaye at users dot sourceforge dot net>
+2006-11-22  Xavier de Gaye <xdegaye at users dot sourceforge dot net>
+
+	* clewn.h clewn.c netbeans.c:
+	Use the new netbeans 2.4 getAnno function (vim patch 163) to get the
+	breakpoint position that is saved in the project file
 
 	* clewn.c:
 	Add support for the disable command in the project file
