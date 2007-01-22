@@ -1,6 +1,10 @@
 
 2007-01-22  Xavier de Gaye <xdegaye at users dot sourceforge dot net>
 
+	*  clewn.c clewn.h gdb.h netbeans.c gdb_lvl3.c: the error message
+	"Clewn cannot find file foobar.c in GDB source directories"
+	is printed at each prompt instead of once.
+
 	* netbeans.c: close the asm buffers when running netbeans version 2.4;
 	Vim version 7.0 after the patch 163.
 

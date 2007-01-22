@@ -17,7 +17,7 @@
  * Free Software Foundation, Inc.,
  * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  *
- * $Id: netbeans.c 116 2007-01-22 12:23:45Z xavier $
+ * $Id: netbeans.c 117 2007-01-22 13:41:12Z xavier $
  */
 
 #include <config.h>
@@ -1166,12 +1166,13 @@ cnb_endAtomic(bufno) int bufno; { send_cmd(bufno, "endAtomic", NULL); }
  * Return the buffer number or -1 when error.
  */
     int
-cnb_editFile(name, lnum, sourcedir, source_cur, source_list, obs)
+cnb_editFile(name, lnum, sourcedir, source_cur, source_list, silent, obs)
     char_u *name;	/* file name */
     linenr_T lnum;	/* line number */
     char_u *sourcedir;	/* GDB source directories */
     char_u *source_cur;	/* GDB current source */
     char_u *source_list;/* GDB source list */
+    int silent;
     struct obstack *obs;
 {
     int bufno = -1;
@@ -1199,7 +1200,7 @@ cnb_editFile(name, lnum, sourcedir, source_cur, source_list, obs)
 
     if (pathname == NULL)
     {
-	if (STRLEN(name) < MAXMSGSIZE - 100)
+	if (! silent && STRLEN(name) < MAXMSGSIZE - 100)
 	{
 	    sprintf(cnb_buf,
 		    "Clewn cannot find file \"%s\" in GDB source directories\n", name);

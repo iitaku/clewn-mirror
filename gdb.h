@@ -17,7 +17,7 @@
  * Free Software Foundation, Inc.,
  * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  *
- * $Id: gdb.h 116 2007-01-22 12:23:45Z xavier $
+ * $Id: gdb.h 117 2007-01-22 13:41:12Z xavier $
  */
 
 #ifndef GDB_H
@@ -584,7 +584,7 @@ void gdb_set_cursor __ARGS((win_T *, linenr_T));
 void gdb_popup_console __ARGS((gdb_T *));
 void gdb_redraw __ARGS((buf_T *));
 #else
-int gdb_edit_file __ARGS((int, char_u *, linenr_T, struct obstack *));
+int gdb_edit_file __ARGS((int, char_u *, linenr_T, int, struct obstack *));
 #endif
 void gdb_msg_busy __ARGS((char_u *));
 void gdb_showBalloon __ARGS((char_u *, struct obstack *));

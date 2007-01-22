@@ -17,7 +17,7 @@
  * Free Software Foundation, Inc.,
  * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  *
- * $Id: clewn.h 114 2006-11-23 18:43:11Z xavier $
+ * $Id: clewn.h 117 2007-01-22 13:41:12Z xavier $
  */
 
 #ifndef CLEWN_H
@@ -196,7 +196,7 @@ void cnb_send_debug __ARGS((int, char_u *));
 void cnb_showBalloon __ARGS((char_u *, int, struct obstack *));
 void cnb_startAtomic __ARGS((int));
 void cnb_endAtomic __ARGS((int));
-int cnb_editFile __ARGS((char_u *, linenr_T, char_u *, char_u *, char_u *, struct obstack *));
+int cnb_editFile __ARGS((char_u *, linenr_T, char_u *, char_u *, char_u *, int, struct obstack *));
 int cnb_define_sign __ARGS((int, int, int, struct obstack *));
 void cnb_buf_addsign __ARGS((int, int, int, linenr_T, struct obstack *));
 int cnb_buf_getsign __ARGS((int, int));

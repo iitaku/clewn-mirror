@@ -17,7 +17,7 @@
  * Free Software Foundation, Inc.,
  * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  *
- * $Id: gdb_lvl3.c 115 2006-11-23 19:03:03Z xavier $
+ * $Id: gdb_lvl3.c 117 2007-01-22 13:41:12Z xavier $
  */
 
 # ifdef HAVE_CLEWN
@@ -3999,7 +3999,7 @@ gdb_process_record(this, address, at, line, source, obs)
 			&& (this->bp_state & BPS_FR_INVALID)))
 	    )
     {
-	if ((record->buf = gdb_edit_file(buf, bp_file, record->lnum, obs)) > 0)
+	if ((record->buf = gdb_edit_file(buf, bp_file, record->lnum, 1, obs)) > 0)
 	{
 	    if ((record->typenr = gdb_define_bpsign(record, obs)) != -1)
 	    {

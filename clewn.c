@@ -17,7 +17,7 @@
  * Free Software Foundation, Inc.,
  * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  *
- * $Id: clewn.c 116 2007-01-22 12:23:45Z xavier $
+ * $Id: clewn.c 117 2007-01-22 13:41:12Z xavier $
  */
 
 #include <config.h>
@@ -1987,7 +1987,7 @@ gdb_fr_set(this, file, line, obs)
 
     if (cnb_isvalid_buffer(buf) || file != NULL)
     {
-	if ((buf = gdb_edit_file(buf, file, lnum, obs)) > 0)
+	if ((buf = gdb_edit_file(buf, file, lnum, 0, obs)) > 0)
 	    gdb_fr_lite(this, buf, lnum, obs);
 	else
 	    return -1;
@@ -2286,10 +2286,11 @@ close:
  * Return the buffer number or -1 when error.
  */
     int
-gdb_edit_file(buf, fname, lnum, obs)
+gdb_edit_file(buf, fname, lnum, silent, obs)
     int buf;		/* asm buffer number to edit */
     char_u *fname;	/* file name */
     linenr_T lnum;	/* line number */
+    int silent;
     struct obstack *obs;
 {
     if (gdb == NULL)
@@ -2302,9 +2303,10 @@ gdb_edit_file(buf, fname, lnum, obs)
 	return -1;
 
 #ifdef GDB_LVL3_SUPPORT
-    return cnb_editFile(fname, lnum, gdb->directories, gdb->lvl3.source_cur, gdb->lvl3.source_list, obs);
+    return cnb_editFile(fname, lnum, gdb->directories, gdb->lvl3.source_cur,
+					    gdb->lvl3.source_list, silent, obs);
 #else
-    return cnb_editFile(fname, lnum, gdb->directories, NULL, NULL, obs);
+    return cnb_editFile(fname, lnum, gdb->directories, NULL, NULL, silent, obs);
 #endif
 }
 
