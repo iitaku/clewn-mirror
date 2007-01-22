@@ -17,7 +17,7 @@
  * Free Software Foundation, Inc.,
  * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  *
- * $Id: clewn.c 114 2006-11-23 18:43:11Z xavier $
+ * $Id: clewn.c 116 2007-01-22 12:23:45Z xavier $
  */
 
 #include <config.h>
@@ -358,7 +358,7 @@ main(int argc, char ** argv)
 
 #if defined(GDB_MTRACE) && defined(HAVE_MTRACE)
     mtrace();
-    mv_hooks;
+    mv_hooks();
 #endif
     /* register an abort function for when allocating memory fails */
     xatabort(clewn_abort);

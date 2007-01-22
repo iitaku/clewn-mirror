@@ -1,5 +1,8 @@
 
-2006-11-23  Xavier de Gaye <xdegaye at users dot sourceforge dot net>
+2007-01-22  Xavier de Gaye <xdegaye at users dot sourceforge dot net>
+
+	* netbeans.c: close the asm buffers when running netbeans version 2.4;
+	Vim version 7.0 after the patch 163.
 
 	* gdb_lvl3.c: file loaded from the project file overwrites the
 	file loaded from the command line, warn the user

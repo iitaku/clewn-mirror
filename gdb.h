@@ -17,7 +17,7 @@
  * Free Software Foundation, Inc.,
  * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  *
- * $Id: gdb.h 108 2006-11-12 17:35:51Z xavier $
+ * $Id: gdb.h 116 2007-01-22 12:23:45Z xavier $
  */
 
 #ifndef GDB_H
@@ -648,24 +648,41 @@ extern __ptr_t (*s_malloc) (size_t, const void *);
 extern void (*s_free) (void *, const void *);
 extern __ptr_t (*s_realloc) (void *, size_t, const void *);
 
-# define mv_hooks {s_malloc=__malloc_hook; s_free=__free_hook; s_realloc=__realloc_hook; \
-	__malloc_hook=NULL;  __free_hook=NULL;  __realloc_hook=NULL;}
-# define get_hooks {__malloc_hook=s_malloc; __free_hook=s_free; __realloc_hook=s_realloc;}
+# define mv_hooks() do {	\
+    s_malloc = __malloc_hook;	\
+    s_free = __free_hook;	\
+    s_realloc = __realloc_hook;	\
+    __malloc_hook = NULL;	\
+    __free_hook = NULL;		\
+    __realloc_hook = NULL;	\
+    } while (0)
+
+# define get_hooks() do {	\
+    __malloc_hook = s_malloc;	\
+    __free_hook = s_free;	\
+    __realloc_hook = s_realloc;	\
+    } while (0)
 
 /* we do call sometimes vim_free directly and allocation is not mtraced:
  * when the called Vim function does not free all its allocated memory
  * after it returns */
-# define xmalloc(s) ({char_u *mret; get_hooks; mret=xmalloc((s)); mv_hooks; mret;})
-# define xcalloc(s) ({char_u *mret; get_hooks; mret=xcalloc((s)); mv_hooks; mret;})
-# define xrealloc(m,s) ({char_u *mret; get_hooks; mret=xrealloc((m),(s)); mv_hooks; mret;})
-# define xfree(x) ({get_hooks; xfree((x)); mv_hooks;})
-# define clewn_strsave(s) ({char_u *mret; get_hooks; mret=clewn_strsave((s)); mv_hooks; mret;})
-# define clewn_strnsave(s,l) ({char_u *mret; get_hooks; mret=clewn_strnsave((s),(l)); mv_hooks; mret;})
+# define xmalloc(s) ({char_u *mret; get_hooks(); mret=xmalloc((s)); mv_hooks(); mret;})
+# define xcalloc(s) ({char_u *mret; get_hooks(); mret=xcalloc((s)); mv_hooks(); mret;})
+# define xrealloc(m,s) ({char_u *mret; get_hooks(); mret=xrealloc((m),(s)); mv_hooks(); mret;})
 
-# define vim_strsave_escaped(s,e) ({char_u *mret; get_hooks; mret=vim_strsave_escaped((s),(e)); mv_hooks; mret;})
-# define vim_regcomp(s,m) ({regprog_T *mret; get_hooks; mret=vim_regcomp((s),(m)); mv_hooks; mret;})
-# define FullName_save(n,f) ({char_u *mret; get_hooks; mret=FullName_save((n),(f)); mv_hooks; mret;})
-# define get_option_value(n,u,s,o) ({int r; get_hooks; r=get_option_value((n),(u),(s),(o)); mv_hooks; r;})
+# define xfree(x) do {		\
+    get_hooks();		\
+    xfree((x));			\
+    mv_hooks();			\
+    } while (0)
+
+# define clewn_strsave(s) ({char_u *mret; get_hooks(); mret=clewn_strsave((s)); mv_hooks(); mret;})
+# define clewn_strnsave(s,l) ({char_u *mret; get_hooks(); mret=clewn_strnsave((s),(l)); mv_hooks(); mret;})
+
+# define vim_strsave_escaped(s,e) ({char_u *mret; get_hooks(); mret=vim_strsave_escaped((s),(e)); mv_hooks(); mret;})
+# define vim_regcomp(s,m) ({regprog_T *mret; get_hooks(); mret=vim_regcomp((s),(m)); mv_hooks(); mret;})
+# define FullName_save(n,f) ({char_u *mret; get_hooks(); mret=FullName_save((n),(f)); mv_hooks(); mret;})
+# define get_option_value(n,u,s,o) ({int r; get_hooks(); r=get_option_value((n),(u),(s),(o)); mv_hooks(); r;})
 #endif	/* GDB_MTRACE */
 #endif	/* GDB_H */
 

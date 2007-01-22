@@ -17,7 +17,7 @@
  * Free Software Foundation, Inc.,
  * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  *
- * $Id: netbeans.c 114 2006-11-23 18:43:11Z xavier $
+ * $Id: netbeans.c 116 2007-01-22 12:23:45Z xavier $
  */
 
 #include <config.h>
@@ -33,9 +33,11 @@
 #include "gdb.h"
 #include "misc.h"
 
-#define NETBEANS_REQSTED_VERSION    "2.1"
+#define NETBEANS_REQSTED_VERSION "2.1"
 #define NETBEANS_SPECIALKEYS_VERSION "2.3"
-#define NETBEANS_GETANNO_VERSION    "2.4"
+#define NETBEANS_GETANNO_VERSION "2.4"
+#define NETBEANS_CLOSE_BUGFIXED_VERSION "2.4"
+
 #define BUFF_ALLOC_INCREMENT	    20
 #define MAXMSGSIZE		    4096
 
@@ -114,6 +116,7 @@ typedef struct
 #define NBS_CLOSING	0x10
 #define NBS_SPECIALKEYS	0x20
 #define NBS_GETANNO	0x40
+#define NBS_CLOSE_FIX	0x80
 
 /* The Clewn NetBeans structure */
 typedef struct
@@ -880,6 +883,8 @@ conn_setup(event, obs)
 			cnb->state |= NBS_SPECIALKEYS;
 		    if (STRCMP(version, NETBEANS_GETANNO_VERSION) >= 0)
 			cnb->state |= NBS_GETANNO;
+		    if (STRCMP(version, NETBEANS_CLOSE_BUGFIXED_VERSION) >= 0)
+			cnb->state |= NBS_CLOSE_FIX;
 
 		    return OK;
 		}
@@ -2022,14 +2027,14 @@ cnb_unlink_asm()
 	buf = cnb->cnbuf + j;
 
 	if (! (buf->state & BUFS_KILLED) && (buf->state & BUFS_ASM) && buf->name != NULL) {
-#ifdef NETBEANS_CLOSE_BUGFIXED
-	    int idx;
+	    if (cnb->state & NBS_READY && cnb->state & NBS_CLOSE_FIX) {
+		int idx;
 
-	    if ((idx = cnb_lookup_buf(buf->name)) != -1) {
-		send_cmd(idx, "close", NULL);
-		cnb_kill(idx);
+		if ((idx = cnb_lookup_buf(buf->name)) != -1) {
+		    send_cmd(idx, "close", NULL);
+		    cnb_kill(idx);
+		}
 	    }
-#endif
 
 	    (void)unlink(buf->name);
 	}
