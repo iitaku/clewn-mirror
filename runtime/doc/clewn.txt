@@ -1,4 +1,4 @@
-*clewn.txt*                                       Last change: 2006 Nov 22
+*clewn.txt*                                       Last change: 2007 Jul 30
 
 
 			      CLEWN USER MANUAL
@@ -103,7 +103,7 @@ displaying the GDB watched variables.
 
 Once clewn is started, it is always possible to fork a new instance of GDB
 while retaining the existing NetBeans connection to gvim, with the clewn
-'restart' command .
+'cl_restart' command .
 
 
 						    *clewn-source-path*
@@ -206,7 +206,7 @@ while sourcing the project file because it cannot change to the requested
 directory, or because it cannot load the program file to debug. This is not
 the case if gdb finds an error while setting a breakpoint: an error message is
 printed, but this does not prevent clewn from overwritting the project file
-the next time the command 'restart' is run, or on quitting.
+the next time the command 'cl_restart' is run, or on quitting.
 
 Note: The breakpoints are not saved to the project file when you quit Clewn
 from Vim. You must must quit Clewn by typing the 'quit' command in clewn, or by
@@ -506,7 +506,7 @@ both use readline. The differences are:
     - the 'createvar' command used with the watched variables window, is not a
       GDB command
 
-    - the 'restart' command used to fork a new fresh instance of GDB while
+    - the 'cl_restart' command used to fork a new fresh instance of GDB while
       retaining the existing netbeans connection to gvim, is not a GDB command
 
 Note: Start rxvt or xterm with option '-sb' to be able to scroll GDB output

@@ -17,7 +17,7 @@
  * Free Software Foundation, Inc.,
  * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  *
- * $Id: netbeans.c 117 2007-01-22 13:41:12Z xavier $
+ * $Id: netbeans.c 148 2007-07-21 16:35:40Z xavier $
  */
 
 #include <config.h>
@@ -157,7 +157,6 @@ static void send_function __ARGS((int, char_u *, char_u *));
 static pathmap_T * pm_parse __ARGS((char *));
 static char_u * pm_mapto_vim __ARGS((char_u *, char_u *, char_u *, char_u *, struct obstack *));
 static char_u * pm_mapto_gdb __ARGS((char_u *, struct obstack *));
-static char_u * get_fullpath __ARGS((char_u *, char_u *, char_u *, char_u *, struct obstack *));
 static char_u * unquote __ARGS((char_u *, char_u **, struct obstack *));
 static char_u * quote __ARGS((char_u *, struct obstack *));
 static cnbuf_T * lowlevel_buf __ARGS((int));
@@ -1562,8 +1561,6 @@ pm_parse(pathnames_map)
     return pathmap;
 }
 
-#define GDB_CDIR    "$cdir"
-#define GDB_CWD	    "$cwd"
 /*
  * For each mapping in the remote_map array, if gdb_path is a prefix
  * or is the empty string, then replace it with vim_path
@@ -1662,107 +1659,6 @@ pm_mapto_gdb(name, obs)
     }
 
     return (char_u *)clewn_strsave(name);
-}
-
-/*
- * Get a full path name for the file named 'name'.
- * If name is an absolute path, just stat it. Otherwise, add name to
- * each directory in GDB source directories and stat the result.
- */
-    static char_u *
-get_fullpath(name, sourcedir, source_cur, source_list, obs)
-    char_u *name;	/* file name */
-    char_u *sourcedir;	/* GDB source directories */
-    char_u *source_cur;	/* GDB current source */
-    char_u *source_list;/* GDB source list */
-    struct obstack *obs;
-{
-    char_u *pathname;
-    char_u pathbuf[MAXPATHL];
-    struct stat st;
-    char_u *dir;
-    char_u *ptr;
-    char_u *last;
-    char_u *hay;
-    char_u *found;
-    char_u *end;
-
-    if (name == NULL || *name == NUL)
-	return NULL;
-
-    /* an absolute path name */
-    if (*name == '/')
-    {
-	if (stat((char *)name, &st) == 0)
-	    return name;
-	else
-	    return NULL;
-    }
-
-    if (sourcedir == NULL)		    /* use current working directory */
-	sourcedir = GDB_CWD;
-
-    /* proceed with each directory in GDB source directories */
-    ptr = sourcedir;
-    do
-    {
-	if ((last = STRCHR(ptr, ':')) != NULL)
-	    *last++ = NUL;
-
-	if (STRCMP(ptr, GDB_CDIR) == 0)	    /* compilation directory */
-	{
-	    /* hay: file="NAME",fullname=" */
-	    obstack_strcat(obs, "file=\"");
-	    obstack_strcat(obs, name);
-	    obstack_strcat0(obs, "\",fullname=\"");
-	    hay = (char_u *)obstack_finish(obs);
-
-	    /* name is the current sourcefile: use gdb compilation directory */
-	    if (source_cur != NULL && (found=STRSTR(source_cur, hay)) != NULL ){
-		found += STRLEN(hay);
-		if ((end=STRSTR(found, "\"")) != NULL)
-		    return (char_u *)obstack_copy0(obs, found, end - found);
-	    }
-
-	    /* lookup for first occurence of name in source list */
-	    if (source_list != NULL && (found=STRSTR(source_list, hay)) != NULL ){
-		found += STRLEN(hay);
-		if ((end=STRSTR(found, "\"")) != NULL)
-		    return (char_u *)obstack_copy0(obs, found, end - found);
-	    }
-
-	    dir = NULL;
-	}
-	else if (STRCMP(ptr, GDB_CWD) == 0) /* current working directory */
-	{
-	    if (clewn_getwd(pathbuf, MAXPATHL))
-		dir = pathbuf;
-	    else
-		dir = NULL;
-	}
-	else
-	    dir = ptr;
-
-	if (dir != NULL)
-	{
-	    obstack_strcat(obs, dir);
-	    obstack_strcat(obs, "/");
-	    obstack_strcat0(obs, name);
-	    pathname = (char_u *)obstack_finish(obs);
-
-	    if (stat((char *)pathname, &st) == 0) {
-		/* need to handle the case where the path includes '..'
-		 * for example "/home/xavier/tmp/.." must be converted
-		 * to "/home/xavier" */
-		if (clewn_fullpath(pathname, pathbuf, MAXPATHL, TRUE))
-		    return obstack_strsave(obs, pathbuf);
-	    }
-	}
-
-	ptr = last;
-    } while (ptr != NULL && *ptr != NUL);
-
-    return NULL;
 }
 
 /*

@@ -1,4 +1,17 @@
 
+2007-07-30  Xavier de Gaye <xdegaye at users dot sourceforge dot net>
+
+	*  clewn.c gdb_lvl3.c: Rename the clewn 'restart' command to
+	'cl_restart'.
+
+===============================================================================
+2007-07-19  Xavier de Gaye <xdegaye at users dot sourceforge dot net>
+
+	*  netbeans.c misc.c misc.h gdb.h gdb.c gdb_lvl3.c:
+	Retrofit the changes made in clewn 1.8 to vimgdb: locate the source
+	file by using the program debugging information provided by gdb
+
+===============================================================================
 2007-01-22  Xavier de Gaye <xdegaye at users dot sourceforge dot net>
 
 	*  clewn.c clewn.h gdb.h netbeans.c gdb_lvl3.c: the error message

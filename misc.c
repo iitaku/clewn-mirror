@@ -17,7 +17,7 @@
  * Free Software Foundation, Inc.,
  * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  *
- * $Id: misc.c 101 2006-10-18 19:22:02Z xavier $
+ * $Id: misc.c 148 2007-07-21 16:35:40Z xavier $
  */
 
 #ifdef HAVE_CLEWN
@@ -31,6 +31,7 @@ void vim_beep ();
 #include <string.h>
 #include <errno.h>
 #include <ctype.h>
+#include <sys/stat.h>
 
 #ifdef HAVE_READLINE_READLINE_H
 # include <readline/readline.h>
@@ -74,6 +75,17 @@ void vim_beep ();
 #if defined(HAVE_STRINGS_H) && !defined(NO_STRINGS_WITH_STRING_H)
 # include <strings.h>
 #endif
+
+#include "obstack.h"
+#ifdef FEAT_GDB
+# include "vim.h"
+#else
+# include "clewn.h"
+#endif
+
+/* do not define xmalloc and family */
+#undef GDB_MTRACE
+#include "gdb.h"
 
 #include "misc.h"
 
@@ -457,6 +469,107 @@ clewn_fullpath(fname, buf, len, force)
     strcat(buf, fname);
 
     return 1;
+}
+
+/*
+ * Get a full path name for the file named 'name'.
+ * If name is an absolute path, just stat it. Otherwise, add name to
+ * each directory in GDB source directories and stat the result.
+ */
+    char *
+get_fullpath(name, sourcedir, source_cur, source_list, obs)
+    char *name;	        /* file name */
+    char *sourcedir;	/* GDB source directories */
+    char *source_cur;	/* GDB current source */
+    char *source_list;  /* GDB source list */
+    struct obstack *obs;
+{
+    char *pathname;
+    char pathbuf[MAXPATHL];
+    struct stat st;
+    char *dir;
+    char *ptr;
+    char *last;
+    char *hay;
+    char *found;
+    char *end;
+
+    if (name == NULL || *name == NUL)
+	return NULL;
+
+    /* an absolute path name */
+    if (*name == '/')
+    {
+	if (stat((char *)name, &st) == 0)
+	    return name;
+	else
+	    return NULL;
+    }
+
+    if (sourcedir == NULL)		    /* use current working directory */
+	sourcedir = GDB_CWD;
+
+    /* proceed with each directory in GDB source directories */
+    ptr = sourcedir;
+    do
+    {
+	if ((last = strchr(ptr, ':')) != NULL)
+	    *last++ = NUL;
+
+	if (strcmp(ptr, GDB_CDIR) == 0)	    /* compilation directory */
+	{
+	    /* hay: file="NAME",fullname=" */
+	    obstack_strcat(obs, "file=\"");
+	    obstack_strcat(obs, name);
+	    obstack_strcat0(obs, "\",fullname=\"");
+	    hay = (char *)obstack_finish(obs);
+
+	    /* name is the current sourcefile: use gdb compilation directory */
+	    if (source_cur != NULL && (found=strstr(source_cur, hay)) != NULL ){
+		found += strlen(hay);
+		if ((end=strstr(found, "\"")) != NULL)
+		    return (char *)obstack_copy0(obs, found, end - found);
+	    }
+
+	    /* lookup for first occurence of name in source list */
+	    if (source_list != NULL && (found=strstr(source_list, hay)) != NULL ){
+		found += strlen(hay);
+		if ((end=strstr(found, "\"")) != NULL)
+		    return (char *)obstack_copy0(obs, found, end - found);
+	    }
+
+	    dir = NULL;
+	}
+	else if (strcmp(ptr, GDB_CWD) == 0) /* current working directory */
+	{
+	    if (clewn_getwd(pathbuf, MAXPATHL))
+		dir = pathbuf;
+	    else
+		dir = NULL;
+	}
+	else
+	    dir = ptr;
+
+	if (dir != NULL)
+	{
+	    obstack_strcat(obs, dir);
+	    obstack_strcat(obs, "/");
+	    obstack_strcat0(obs, name);
+	    pathname = (char *)obstack_finish(obs);
+
+	    if (stat((char *)pathname, &st) == 0) {
+		/* need to handle the case where the path includes '..'
+		 * for example "/home/xavier/tmp/.." must be converted
+		 * to "/home/xavier" */
+		if (clewn_fullpath(pathname, pathbuf, MAXPATHL, TRUE))
+		    return obstack_strsave(obs, pathbuf);
+	    }
+	}
+
+	ptr = last;
+    } while (ptr != NULL && *ptr != NUL);
+
+    return NULL;
 }
 
 /*

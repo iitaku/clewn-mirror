@@ -17,7 +17,7 @@
  * Free Software Foundation, Inc.,
  * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  *
- * $Id: misc.h 27 2006-01-31 19:30:08Z xavier $
+ * $Id: misc.h 148 2007-07-21 16:35:40Z xavier $
  */
 
 #ifndef MISC_H
@@ -70,6 +70,10 @@ void *clewn_memset __ARGS((void *, int, size_t));
 # endif
 #endif
 
+/* gdb directory constants */
+#define GDB_CDIR    "$cdir"
+#define GDB_CWD	    "$cwd"
+
 void xatabort __ARGS((void (*)(void)));
 void * xmalloc __ARGS((size_t));
 void * xcalloc __ARGS((size_t));
@@ -81,6 +85,7 @@ void clewn_sleep __ARGS((int));
 void clewn_beep __ARGS((void));
 int clewn_getwd __ARGS((char *, int));
 int clewn_fullpath __ARGS((char *, char *, int, int));
+char * get_fullpath __ARGS((char *, char *, char *, char *, struct obstack *));
 void clewn_exec(char *);
 
 #endif	/* MISC_H */

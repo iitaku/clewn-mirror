@@ -17,7 +17,7 @@
  * Free Software Foundation, Inc.,
  * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  *
- * $Id: gdb.h 117 2007-01-22 13:41:12Z xavier $
+ * $Id: gdb.h 148 2007-07-21 16:35:40Z xavier $
  */
 
 #ifndef GDB_H
@@ -265,11 +265,9 @@ typedef struct
 {
     char_u *result;	/* result of a GDB/MI command */
 
-#ifndef FEAT_GDB
     int get_source_list;
     char_u *source_cur;	/* result of -file-list-exec-source-file */
     char_u *source_list;/* result of -file-list-exec-source-files */
-#endif
 
     /* variables window */
     varobj_T *varlist;	/* list of variable objects */
@@ -562,7 +560,6 @@ void gdb_lvl3_init __ARGS((gdb_T *));
 void gdb_fr_lite __ARGS((gdb_T *, buf_T *, linenr_T, struct obstack *));
 int gdb_define_sign __ARGS((int, int));
 void gdb_undefine_sign __ARGS((int));
-void gdb_set_directories __ARGS((gdb_T *));
 buf_T * gdb_unlite __ARGS((int));
 #else
 # define BP_SIGN_ID(n) ((n)+1)	/* reserved sign id: 1 frame */
@@ -605,9 +602,9 @@ char * gdb_get_sfile __ARGS((gdb_T *, int, char_u *, struct obstack *));
 char * gdb_source_project __ARGS((gdb_T *, int, char_u *, struct obstack *));
 char * gdb_get_pwd __ARGS((gdb_T *, int, char_u *, struct obstack *));
 char * gdb_get_args __ARGS((gdb_T *, int, char_u *, struct obstack *));
+#endif
 char * gdb_source_cur __ARGS((gdb_T *, int, char_u *, struct obstack *));
 char * gdb_source_list __ARGS((gdb_T *, int, char_u *, struct obstack *));
-#endif
 char * gdb_get_sourcedir __ARGS((gdb_T *, int, char_u *, struct obstack *));
 char * gdb_get_asmfunc __ARGS((gdb_T *, int, char_u *, struct obstack *));
 char * gdb_get_asmfunc_hack __ARGS((gdb_T *, int, char_u *, struct obstack *));

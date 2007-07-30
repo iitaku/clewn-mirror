@@ -17,7 +17,7 @@
  * Free Software Foundation, Inc.,
  * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  *
- * $Id: gdb_lvl3.c 117 2007-01-22 13:41:12Z xavier $
+ * $Id: gdb_lvl3.c 154 2007-07-30 16:21:25Z xavier $
  */
 
 # ifdef HAVE_CLEWN
@@ -146,9 +146,9 @@ static oobfunc_T oobfunc[] = {
     {gdb_source_project},
     {gdb_get_pwd},
     {gdb_get_args},
+#endif
     {gdb_source_cur},
     {gdb_source_list},
-#endif
     {gdb_get_sfile},
     {gdb_info_frame},
     {gdb_stack_frame},	    /* after gdb_info_frame */
@@ -219,7 +219,7 @@ gdb_docmd_cli(this, cmd)
 
 	/* handle completion for all non-gdb commands */
 	if (this->cmd_type == CMD_RESTART) {
-	    gdb_setwinput((gdb_handle_T *)this, "restart ");
+	    gdb_setwinput((gdb_handle_T *)this, "cl_restart ");
 	    xfree(cmd);
 	    this->oob.state &= ~OS_CMD;
 	    return;
@@ -464,20 +464,18 @@ process_cmd(this, cmd)
 #  else
 	    /* unlink all asm buffers */
 	    cnb_unlink_asm();
+#  endif
 
-#   ifdef GDB_LVL3_SUPPORT
+#  ifdef GDB_LVL3_SUPPORT
 	    /* get source files list */
 	    this->lvl3.get_source_list = TRUE;
-#   endif
 #  endif
 	    break;
 
 	case CMD_SYMF:
-#  ifndef FEAT_GDB
-#   ifdef GDB_LVL3_SUPPORT
+#  ifdef GDB_LVL3_SUPPORT
 	    /* get source files list */
 	    this->lvl3.get_source_list = TRUE;
-#   endif
 #  endif
 	    break;
 
@@ -1095,9 +1093,6 @@ process_annotation(this, str, obs)
 	case ANO_PREPROMPT:
 	    this->syntax = TRUE;
 	    this->parser = PS_PREPROMPT;
-#  ifdef FEAT_GDB
-	    gdb_set_directories(this);
-#  endif
 	    this->cmd_type = CMD_ANY;
 	    this->state &= ~GS_ANO;
 	    break;
@@ -1509,11 +1504,9 @@ clear_gdb_T(this)
     {
 	FREE(this->lvl3.result);
 
-#ifndef FEAT_GDB
 	this->lvl3.get_source_list = TRUE;
 	FREE(this->lvl3.source_cur);
 	FREE(this->lvl3.source_list);
-#endif
 
 	for (item = this->lvl3.varlist; item != NULL; item = next)
 	{
@@ -2159,7 +2152,7 @@ gdb_get_sourcedir(this, state, line, obs)
 }
 
 #ifdef GDB_LVL3_SUPPORT
-#ifndef FEAT_GDB
+# ifndef FEAT_GDB
 /* Source the project file */
     char *
 gdb_source_project(this, state, line, obs)
@@ -2303,6 +2296,7 @@ gdb_get_args(this, state, line, obs)
     }
     return NULL;
 }
+# endif
 
 /* Get GDB current source file */
     char *
@@ -2369,7 +2363,6 @@ gdb_source_list(this, state, line, obs)
     }
     return NULL;
 }
-#endif
 #endif /* GDB_LVL3_SUPPORT */
 
 #  ifdef GDB_LVL3_SUPPORT
@@ -3409,16 +3402,16 @@ varobj_complete(this, obs)
 		}
 		
 		/* build the display line including ={*}, the hiliting sign */
+		obstack_strcat(obs, obj->name);
+		obstack_strcat(obs, ":");
+		obstack_strcat(obs, obj->format);
+		obstack_strcat(obs, " ");
+		obstack_strcat(obs, obj->expression);
+		obstack_strcat(obs, " ={*} ");
 		if (this->lvl3.result != NULL) {
-		    obstack_strcat(obs, obj->name);
-		    obstack_strcat(obs, ":");
-		    obstack_strcat(obs, obj->format);
-		    obstack_strcat(obs, " ");
-		    obstack_strcat(obs, obj->expression);
-		    obstack_strcat(obs, " ={*} ");
 		    obstack_strcat0(obs, this->lvl3.result);
-		    displine = (char_u *)obstack_finish(obs);
 		}
+		displine = (char_u *)obstack_finish(obs);
 
 		/* add the newly created object to variables window */
 		if (obj->state & VS_INIT)

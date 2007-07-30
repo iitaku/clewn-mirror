@@ -17,7 +17,7 @@
  * Free Software Foundation, Inc.,
  * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  *
- * $Id: clewn.c 117 2007-01-22 13:41:12Z xavier $
+ * $Id: clewn.c 154 2007-07-30 16:21:25Z xavier $
  */
 
 #include <config.h>
@@ -188,7 +188,7 @@ static token_T tokens[] =
     {CMD_SYMF,	    "sy",	"mbol-file" },
     {CMD_SYMF,	    "add-sy",	"mbol-file" },
     {CMD_SYMF,	    "so",	"urce"	    },
-    {CMD_RESTART,   "resta",	"rt"	    },
+    {CMD_RESTART,   "cl_",	"restart"   },
     {CMD_QUIT,	    "q",	"uit"	    },
     {CMD_ANY,	    NULL,	NULL	    }
 };
