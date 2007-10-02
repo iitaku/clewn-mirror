@@ -17,7 +17,7 @@
  * Free Software Foundation, Inc.,
  * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  *
- * $Id: misc.c 148 2007-07-21 16:35:40Z xavier $
+ * $Id: misc.c 171 2007-10-02 19:19:22Z xavier $
  */
 
 #ifdef HAVE_CLEWN
@@ -503,7 +503,8 @@ get_fullpath(name, sourcedir, source_cur, source_list, obs)
 	if (stat((char *)name, &st) == 0)
 	    return name;
 	else
-	    return NULL;
+	    /* strip off the directory part and continue */
+	    name = strrchr(name, '/') + 1;
     }
 
     if (sourcedir == NULL)		    /* use current working directory */

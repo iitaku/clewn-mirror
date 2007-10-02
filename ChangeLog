@@ -1,5 +1,8 @@
 
-2007-07-30  Xavier de Gaye <xdegaye at users dot sourceforge dot net>
+2007-10-02  Xavier de Gaye <xdegaye at users dot sourceforge dot net>
+
+	* misc.c: find the source when they have been compiled with an
+	absolute path and moved later
 
 	*  clewn.c gdb_lvl3.c: Rename the clewn 'restart' command to
 	'cl_restart'.
