@@ -13,6 +13,9 @@ a) REQUIRED:
 		    the |+netbeans_intg| feature enabled
     GNU readline
 
+Note that clewn can only be used with gvim, as vim, the version of VIM that
+runs in a terminal, does not support NetBeans.
+
 There is no need for you to check for the existence of the readline library:
 when configure is run, a check is made to ensure that readline can be found
 on your system. GNU readline can be found at:

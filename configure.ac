@@ -1,6 +1,6 @@
 # Process this file with autoconf to produce a configure script.
 AC_PREREQ(2.59)
-AC_INIT([clewn],[1.10.17],[xdegaye@users.sourceforge.net])
+AC_INIT([clewn],[1.10.18],[xdegaye@users.sourceforge.net])
 AC_CONFIG_SRCDIR([clewn.h])
 AC_CONFIG_HEADERS([config.h])
 

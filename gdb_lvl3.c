@@ -17,7 +17,7 @@
  * Free Software Foundation, Inc.,
  * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  *
- * $Id: gdb_lvl3.c 154 2007-07-30 16:21:25Z xavier $
+ * $Id: gdb_lvl3.c 207 2007-12-29 15:37:09Z xavier $
  */
 
 # ifdef HAVE_CLEWN
@@ -972,7 +972,10 @@ gdb_parse_output_cli(this)
 			/* write a complete line */
 			if (end != NULL)
 			{
-			    gdb_write_buf(this, line, FALSE);
+			    if (pending_write)
+				gdb_write_buf(this, line, TRUE);
+			    else
+				gdb_write_buf(this, line, FALSE);
 			}
 #  else
 			gdb_write_buf(this, line, FALSE);

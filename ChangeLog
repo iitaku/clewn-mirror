@@ -1,10 +1,13 @@
 
-2007-10-02  Xavier de Gaye <xdegaye at users dot sourceforge dot net>
+2007-12-28  Xavier de Gaye <xdegaye at users dot sourceforge dot net>
+
+	* gdb_lvl3.c: always write at the start of a new line, the result
+	of the concatenation of multiple small chunks output by gdb.
 
 	* misc.c: find the source when they have been compiled with an
 	absolute path and moved later
 
-	*  clewn.c gdb_lvl3.c: Rename the clewn 'restart' command to
+	* clewn.c gdb_lvl3.c: Rename the clewn 'restart' command to
 	'cl_restart'.
 
 ===============================================================================

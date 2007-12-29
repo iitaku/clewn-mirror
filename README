@@ -5,6 +5,9 @@ Clewn user interface uses readline and, with very few exceptions, is the same
 as the GDB command line interface. Clewn stands for Command Line Editor Worker
 on NetBeans.
 
+Clewn can only be used with gvim, as vim, the version of VIM that runs in a
+terminal, does not support NetBeans.
+
 COMPILING AND INSTALLATION
 See INSTALL.
 
