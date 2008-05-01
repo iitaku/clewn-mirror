@@ -112,8 +112,7 @@ void (*obstack_alloc_failed_handler) (void) = print_and_abort;
 # ifdef _LIBC
 int obstack_exit_failure = EXIT_FAILURE;
 # else
-#  include "exitfail.h"
-#  define obstack_exit_failure exit_failure
+#  define obstack_exit_failure EXIT_FAILURE
 # endif
 
 # ifdef _LIBC
@@ -407,11 +406,9 @@ _obstack_memory_used (struct obstack *h)
 /* Define the error handler.  */
 # ifdef _LIBC
 #  include <libintl.h>
-# else
-#  include "gettext.h"
 # endif
 # ifndef _
-#  define _(msgid) gettext (msgid)
+#  define _(msgid) (msgid)
 # endif
 
 # ifdef _LIBC
