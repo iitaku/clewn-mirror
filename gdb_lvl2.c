@@ -17,7 +17,7 @@
  * Free Software Foundation, Inc.,
  * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  *
- * $Id: gdb_lvl2.c 88 2006-08-13 12:12:19Z xavier $
+ * $Id: gdb_lvl2.c 217 2008-10-11 14:29:18Z xavier $
  */
 
 # ifdef HAVE_CLEWN
@@ -173,7 +173,7 @@ get_lastbp(this, state, line, obs)
 	case OOB_COMPLETE:
 	    /* the last bp in the table */
 	    if (this->lvl2.info[BI_NUM] != NULL
-		    && (bp_num = atoi(this->lvl2.info[BI_NUM])) > 0)
+		    && (bp_num = atoi((char *)this->lvl2.info[BI_NUM])) > 0)
 	    {
 		/* look it up in bpinfo list */
 		for (p = this->bpinfo; p != NULL; p = p->next)
@@ -316,7 +316,7 @@ process_record(this, obs)
 
     /* breakpoint number */
     if (this->lvl2.info[BI_NUM] != NULL)
-	record->id = atoi(this->lvl2.info[BI_NUM]);
+	record->id = atoi((char *)this->lvl2.info[BI_NUM]);
 
     /* enabled state */
     if (this->lvl2.info[BI_ENABLE] != NULL && *(this->lvl2.info[BI_ENABLE]) == 'n')
@@ -334,7 +334,7 @@ process_record(this, obs)
     {
 	/* get last line */
 	if ((ptr = (char_u *)strrchr(
-	    (char_u *)this->lvl2.info[BI_CMMDS], (int)'\n')) == NULL)
+	    (char *)this->lvl2.info[BI_CMMDS], (int)'\n')) == NULL)
 	    ptr = this->lvl2.info[BI_CMMDS];
 	else
 	    ptr++;
@@ -379,7 +379,7 @@ set_bpfield(this, content)
 	pfield = &(this->lvl2.info[RECORD_INDEX(this->bp_state)]);
 
 	if (*pfield == NULL)	    /* a new field */
-	    *pfield = (char_u *)clewn_strsave(content);
+	    *pfield = (char_u *)clewn_strsave((char *)content);
 	else if (this->annoted)	    /* concatenate */
 	{
 	    gdb_cat(&res, *pfield);
@@ -390,7 +390,7 @@ set_bpfield(this, content)
 	else			    /* a new line in this field */
 	{
 	    gdb_cat(&res, *pfield);
-	    gdb_cat(&res, "\n");
+	    gdb_cat(&res, (char_u *)"\n");
 	    gdb_cat(&res, content);
 	    xfree(*pfield);
 	    *pfield = res;
@@ -528,11 +528,11 @@ get_display(this, state, line, obs)
 		if ((res = gdb_regexec(this->lvl2.dispinfostr, PAT_DISPINFO, 1, obs)) != NULL)
 		{
 		    gdb_cat(&(this->lvl2.dispinfo), res);
-		    gdb_cat(&(this->lvl2.dispinfo), " ");
+		    gdb_cat(&(this->lvl2.dispinfo), (char_u *)" ");
 		}
 
 		xfree(this->lvl2.dispinfostr);
-		this->lvl2.dispinfostr = (char_u *)clewn_strsave(line);
+		this->lvl2.dispinfostr = (char_u *)clewn_strsave((char *)line);
 	    }
 	    break;
 
@@ -541,7 +541,7 @@ get_display(this, state, line, obs)
 	    if ((res = gdb_regexec(this->lvl2.dispinfostr, PAT_DISPINFO, 1, obs)) != NULL)
 	    {
 		gdb_cat(&(this->lvl2.dispinfo), res);
-		gdb_cat(&(this->lvl2.dispinfo), " ");
+		gdb_cat(&(this->lvl2.dispinfo), (char_u *)" ");
 	    }
 	    FREE(this->lvl2.dispinfostr);
 	    break;
@@ -668,7 +668,7 @@ undisplay(this, state, line, obs)
 		    obstack_strcat(obs, "server undisplay ");
 		    obstack_strcat(obs, sequence);
 		    obstack_strcat0(obs, "\n");
-		    return (char_u *)obstack_finish(obs);
+		    return (char *)obstack_finish(obs);
 		}
 	    }
 	    break;
@@ -825,7 +825,7 @@ gdb_process_display(this, line, obs)
 
 	    /* display number */
 	    if (this->lvl2.dentry.num == NULL)
-		this->lvl2.dentry.num = (char_u *)clewn_strsave(line);
+		this->lvl2.dentry.num = (char_u *)clewn_strsave((char *)line);
 	    else
 	    {
 		gdb_cat(&res, this->lvl2.dentry.num);
@@ -839,7 +839,7 @@ gdb_process_display(this, line, obs)
 	case ANO_DISP_EXP:
 	    /* display format and expression */
 	    if (this->lvl2.dentry.expression == NULL)
-		this->lvl2.dentry.expression = (char_u *)clewn_strsave(line);
+		this->lvl2.dentry.expression = (char_u *)clewn_strsave((char *)line);
 	    else
 	    {
 		gdb_cat(&res, this->lvl2.dentry.expression);
@@ -856,7 +856,7 @@ gdb_process_display(this, line, obs)
 	case ANO_DISP_VALUE:
 	    /* display value */
 	    if (this->lvl2.dentry.value == NULL)
-		this->lvl2.dentry.value = (char_u *)clewn_strsave(line);
+		this->lvl2.dentry.value = (char_u *)clewn_strsave((char *)line);
 	    else
 	    {
 		gdb_cat(&res, this->lvl2.dentry.value);
@@ -872,7 +872,7 @@ gdb_process_display(this, line, obs)
 
 	    /* sanity checks */
 	    if (this->lvl2.dentry.num == NULL
-		    || (num = atoi(this->lvl2.dentry.num)) <= 0
+		    || (num = atoi((char *)this->lvl2.dentry.num)) <= 0
 		    || this->lvl2.dentry.expression == NULL
 		    || this->lvl2.dentry.value == NULL)
 	    {
@@ -1076,7 +1076,7 @@ var_delete(this)
 
     (void)obstack_init(&obs);
 
-    if ((res = undisplay(this, OOB_CMD, "", &obs)) != NULL)
+    if ((res = (char_u *)undisplay(this, OOB_CMD, (char_u *)"", &obs)) != NULL)
 	gdb_send_cmd(this, res);
 
     obstack_free(&obs, NULL);

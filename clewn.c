@@ -17,7 +17,7 @@
  * Free Software Foundation, Inc.,
  * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  *
- * $Id: clewn.c 154 2007-07-30 16:21:25Z xavier $
+ * $Id: clewn.c 217 2008-10-11 14:29:18Z xavier $
  */
 
 #include <config.h>
@@ -110,10 +110,10 @@ int p_asm = 0;			/* assembly support when non zero */
 static int module_state = -1;		    /* initial state (not OK, nor FAIL) */
 static char clewn_buf[MAX_BUFFSIZE];	    /* general purpose buffer */
 
-static char_u * p_vim = NULL;
+static char * p_vim = NULL;
 static char * p_vc = "gvim";/* gvim shell command or gvim pathname */
 static char * p_va = "";    /* gvim command line arguments */
-static char_u * p_gdb = NULL;
+static char * p_gdb = NULL;
 static char * p_gc = "gdb"; /* gdb shell command or gdb pathname */
 static char * p_ga = "";    /* gdb command line arguments */
 static char * p_project = NULL;/* project file name */
@@ -121,7 +121,7 @@ static char * p_pmap = NULL;/* remote debugging pathnames map */
 
 static int clewn_debug = FALSE;				/* debug flag */
 static int showBalloon = FALSE;				/* enable tooltips */
-static char_u * p_gvar = VARIABLES_FNAME;		/* variables buffer extension */
+static char * p_gvar = VARIABLES_FNAME;			/* variables buffer extension */
 static char *clewn_tempdir = NULL;			/* Clewn temporary directory */
 static char *clewn_dir;					/* Clewn directory */
 
@@ -129,10 +129,10 @@ static gdb_T *gdb = NULL;	/* the gdb_T instance */
 static int got_sigint = FALSE;	/* TRUE when got SIGINT */
 static int got_sigchld = FALSE;	/* TRUE when got SIGCHLD */
 static int got_tab = FALSE;	/* TRUE when got a <TAB> */
-static char_u *preprompt;	/* previous prompt line when prompt is multi line */
-static char_u *cplt_prmpt;	/* current prompt for completion */
+static char *preprompt;		/* previous prompt line when prompt is multi line */
+static char *cplt_prmpt;	/* current prompt for completion */
 static int nl_output;		/* when TRUE, no need to output a newline */
-static char_u *key_command;	/* command mapped from NetBeans key */
+static char *key_command;	/* command mapped from NetBeans key */
 static int inside_readline = FALSE; /* TRUE when cli_getc() is called by readline() */
 
 #define FUNMAP_SIZE 20
@@ -148,7 +148,7 @@ static int inside_readline = FALSE; /* TRUE when cli_getc() is called by readlin
 #define SET_KEY_LINE(t,i) (((i) >= 0 && (i) < CLEWN_KEYMAP_SIZE) \
 	? ((t)[(i) / INTBITS] |= (1 << ((i) % INTBITS))) : FALSE)
 
-static char_u * keymap[CLEWN_KEYMAP_SIZE];  /* GDB commands array indexed by key */
+static char * keymap[CLEWN_KEYMAP_SIZE];  /* GDB commands array indexed by key */
 static int keyline[CLEWN_KEYMAP_SIZE / INTBITS + 1];	/* %line flag bit map */
 static int keytext[CLEWN_KEYMAP_SIZE / INTBITS + 1];	/* %text flag bit map */
 
@@ -156,8 +156,8 @@ static int keytext[CLEWN_KEYMAP_SIZE / INTBITS + 1];	/* %text flag bit map */
 typedef struct
 {
     int type;
-    char_u *keyword;	/* keyword */
-    char_u *tail;	/* optional tail */
+    char *keyword;	/* keyword */
+    char *tail;		/* optional tail */
 } token_T;
 
 static token_T tokens[] =
@@ -197,7 +197,7 @@ static token_T tokens[] =
 typedef struct
 {
     int id;		/* pattern id */
-    char_u *str;	/* string pattern */
+    char *str;		/* string pattern */
     regex_t *regprog;	/* compiled regexp */
 } pattern_T;
 
@@ -236,7 +236,7 @@ static pattern_T patterns[] =
 };
 
 #if defined(GDB_LVL2_SUPPORT) || defined(GDB_LVL3_SUPPORT)
-static char_u *inputrc;		/* readline inputrc file name */
+static char *inputrc;		/* readline inputrc file name */
 
 /* gdb readline inputrc file content */
 static char *inputrc_array[] = {
@@ -247,7 +247,7 @@ static char *inputrc_array[] = {
 #endif
 
 /* default key mappings with netbeans version < 2.3 (no specialKeys command) */
-static char_u * old_keys_mapping[] =
+static char * old_keys_mapping[] =
 {
     "z:\032:		    # interrupt",
     "B:info breakpoints:",
@@ -275,7 +275,7 @@ static char_u * old_keys_mapping[] =
 };
 
 /* default key mappings with netbeans version >= 2.3 (with specialKeys command) */
-static char_u * keys_mapping[] =
+static char * keys_mapping[] =
 {
     "C-Z:\032:		    # interrupt",
     "B:info breakpoints:",
@@ -339,11 +339,11 @@ static int clewn_mktmpdir __ARGS((void));
 static void clewn_deltempdir __ARGS((void));
 static void print_regerror __ARGS((int, regex_t *));
 static void clear_readline __ARGS((void));
-static void clewn_add_history __ARGS((char_u *));
-static void parse_keyline(char_u *);
-static void read_keysfile __ARGS((char_u *));
+static void clewn_add_history __ARGS((char *));
+static void parse_keyline(char *);
+static void read_keysfile __ARGS((char *));
 static void process_nb_event __ARGS((void));
-static char_u * get_keymap __ARGS((nb_event_T *));
+static char * get_keymap __ARGS((nb_event_T *));
 
 /*
  * Main
@@ -351,10 +351,10 @@ static char_u * get_keymap __ARGS((nb_event_T *));
     int
 main(int argc, char ** argv)
 {
-    char_u * nbconn  = NULL;	    /* NetBeans connection parameters */
-    char_u intr[2]   = {KEY_INTERUPT, NUL};
+    char * nbconn  = NULL;	    /* NetBeans connection parameters */
+    char intr[2]   = {KEY_INTERUPT, NUL};
     int reuse_addr   = TRUE;
-    char_u *line;
+    char *line;
 
 #if defined(GDB_MTRACE) && defined(HAVE_MTRACE)
     mtrace();
@@ -473,7 +473,7 @@ main(int argc, char ** argv)
 
 		case 'n':   /* "-nb:host:port:passwd" NetBeans parameters */
 		    if (*(opt + 2) == 'b' && *(opt + 3) == ':')
-			nbconn = (char_u *)(opt + 4);
+			nbconn = opt + 4;
 		    break;
 
 		case 'h':   /* "-h" print help */
@@ -510,10 +510,10 @@ main(int argc, char ** argv)
     {
 	#define DUMMY_ALLOC_COUNT 100	/* tune this value */
 	int i;
-	char_u * dummy;
+	char * dummy;
 
 	for (i = 0; i < DUMMY_ALLOC_COUNT; i++)
-	    if ((dummy = (char_u *)xmalloc(1)) != NULL)
+	    if ((dummy = (char *)xmalloc(1)) != NULL)
 		xfree(dummy);
     }
 #endif
@@ -568,7 +568,7 @@ main(int argc, char ** argv)
 
 	/* should never happen (but make sure we do have a prompt) */
 	if (gdb->prompt == NULL)
-	    gdb->prompt = (char_u *)clewn_strsave("(gdb)  ");
+	    gdb->prompt = clewn_strsave("(gdb)  ");
 
 	/*
 	 * 2 - Launch readline
@@ -580,14 +580,14 @@ main(int argc, char ** argv)
 
 	inside_readline = TRUE;
 
-	if ((line = (char_u *)readline(gdb->prompt)) == NULL)
+	if ((line = readline(gdb->prompt)) == NULL)
 	    break;
 
 	inside_readline = FALSE;
 
 	if (gdb->note == ANO_PMT_FORMORE)
 	{
-	    if (got_sigint || (STRLEN(line) == 1 && *line == 'q'))
+	    if (got_sigint || (strlen(line) == 1 && *line == 'q'))
 		got_sigint = TRUE;	/* abort listing */
 	    else
 	    {
@@ -641,7 +641,7 @@ cli_complete(whatisthis, key)
 cli_complete()
 #endif
 {
-    char_u * cmd;
+    char * cmd;
 
 #ifdef HAVE_RL_COMMAND_FUNC_T
     whatisthis = key = 0;   /* keep compiler happy */
@@ -649,12 +649,12 @@ cli_complete()
 
     /* store the prompt for the completion result */
     xfree(cplt_prmpt);
-    cplt_prmpt = (char_u *)clewn_strsave(gdb->prompt);
+    cplt_prmpt = clewn_strsave(gdb->prompt);
 
     /* send readline content up to cursor and <TAB> to GDB */
-    cmd = (char_u *)clewn_strnsave((char_u *)rl_line_buffer, rl_point + 1);
+    cmd = clewn_strnsave(rl_line_buffer, rl_point + 1);
     *(cmd + rl_point) = NUL;    /* need rl_point first characters, not more */
-    STRCAT(cmd, "\t");
+    strcat(cmd, "\t");
     gdb_docmd((gdb_handle_T *)gdb, cmd);   /* send it to GDB */
     xfree(cmd);
 
@@ -803,7 +803,7 @@ cli_getc(instream)
 		    /* a completion query: provide last line as prompt
 		     * overwrite (identical) last line with readline prompt */
 		    nl_output = TRUE;
-		    gdb->prompt = (char_u *)clewn_strsave(gdb->line);
+		    gdb->prompt = clewn_strsave(gdb->line);
 		}
 		else
 		{
@@ -1140,7 +1140,7 @@ clewn_getout()
     void
 gdb_docmd(gdb_inst, cmd)
     gdb_handle_T *gdb_inst;
-    char_u  *cmd;	/* gdb cmd */
+    char  *cmd;	/* gdb cmd */
 {
     gdb_T *this = (gdb_T *)gdb_inst;
 
@@ -1148,7 +1148,7 @@ gdb_docmd(gdb_inst, cmd)
 	return;
 
     /* accept one cmd at a time, allow intr */
-    if (cmd != NULL && *cmd != NUL && *(cmd + STRLEN(cmd) - 1) == KEY_INTERUPT)
+    if (cmd != NULL && *cmd != NUL && *(cmd + strlen(cmd) - 1) == KEY_INTERUPT)
 	this->oob.state |= OS_INTR;
     else if (this->oob.state & OS_CMD)
     {
@@ -1173,7 +1173,7 @@ gdb_docmd(gdb_inst, cmd)
     void
 gdb_setwinput(gdb_inst, cmd)
     gdb_handle_T *gdb_inst;
-    char_u *cmd;	/* cmd to insert */
+    char *cmd;	/* cmd to insert */
 {
     gdb_T *this = (gdb_T *)gdb_inst;
 
@@ -1183,11 +1183,11 @@ gdb_setwinput(gdb_inst, cmd)
     if (cmd == NULL)
 	cmd = "";
 
-    if (STRCHR(cmd, (int)NL) != NULL)	/* assert no NL in cmd */
+    if (strchr(cmd, (int)NL) != NULL)	/* assert no NL in cmd */
 	return;
 
     xfree(this->winput_cmd);
-    this->winput_cmd = (char_u *)clewn_strsave(cmd);
+    this->winput_cmd = clewn_strsave(cmd);
 }
 
 /** Return TRUE if we are opening the gdb input-line window */
@@ -1239,7 +1239,7 @@ start_gdb_process()
 module_init()
 {
     FILE *fd;
-    char_u *fname = NULL;
+    char *fname = NULL;
     char *histsize;
     pattern_T *pat;
     int errcode;
@@ -1336,7 +1336,7 @@ fin:
     static void
 module_end()
 {
-    char_u *fname = NULL;
+    char *fname = NULL;
     pattern_T *pat;
     int i;
 
@@ -1464,7 +1464,7 @@ clear_gdb_T()
     static void
 exec_gdb()
 {
-    char_u *err = NULL;
+    char *err = NULL;
     int fd = -1;	/* slave pty file descriptor */
     char *tty;		/* pty name */
 # ifdef HAVE_TERMIOS_H
@@ -1704,11 +1704,11 @@ exec_gvim()
 clewn_keymap()
 {
     static int keymap_done  = 0;
-    char_u *fname = NULL;
+    char *fname = NULL;
     int key;
-    char_u ** line;
-    char_u * ptr;
-    char_u ** default_keymap;
+    char ** line;
+    char * ptr;
+    char ** default_keymap;
 
     /* map the keys in vim - do it only once and when the data socket is opened */
     if (! keymap_done && cnb_state()) {
@@ -1764,11 +1764,11 @@ clewn_keymap()
     static void
 write_project()
 {
-    char_u * res = NULL;
+    char * res = NULL;
     int bp_count = 0;
     FILE *stream;
     bpinfo_T *p;
-    char_u * source_file;
+    char * source_file;
     int lnum;
 
     if (gdb->project_file == NULL)	/* no project file */
@@ -1929,7 +1929,7 @@ gdb_as_frset(this, obs)
     struct obstack *obs;
 {
     int bufno;
-    char_u *fname;
+    char *fname;
     linenr_T lnum;
 
     if (this->asm_func == NULL || this->asm_add == NULL)
@@ -1939,7 +1939,7 @@ gdb_as_frset(this, obs)
     for (bufno = 1; ! cnb_outofbounds(bufno); bufno++)
     {
 	if ((fname = cnb_filename(bufno)) != NULL
-		&& STRSTR(fname, this->asm_func) != NULL
+		&& strstr(fname, this->asm_func) != NULL
 		&& (lnum = searchfor(fname, this->asm_add)) > 0)
 	{
 	    this->pool.buf = bufno;
@@ -1962,7 +1962,7 @@ gdb_as_frset(this, obs)
     int
 gdb_fr_set(this, file, line, obs)
     gdb_T *this;
-    char_u *file;
+    char *file;
     linenr_T *line;
     struct obstack *obs;
 {
@@ -2039,7 +2039,7 @@ gdb_fr_unlite(this)
 /* Print an error message */
     void
 EMSG (m)
-    char_u *m;
+    char *m;
 {
     fputs(m, rl_outstream);
     fputs("\n", rl_outstream);
@@ -2121,7 +2121,7 @@ gdb_define_bpsign(bp, obs)
     void
 gdb_write_buf(this, chunk, add)
     gdb_T *this;
-    char_u *chunk;	/* a chunk may contain one, many or no NL */
+    char *chunk;	/* a chunk may contain one, many or no NL */
     int add;		/* TRUE when chunk is added */
 {
     if (chunk == NULL || this == NULL)
@@ -2135,7 +2135,7 @@ gdb_write_buf(this, chunk, add)
     {
 	/* stores the prompt in case it is a multi line prompt */
 	xfree(preprompt);
-	preprompt = (char_u *)clewn_strsave(chunk);
+	preprompt = clewn_strsave(chunk);
 	return;
     }
 
@@ -2144,7 +2144,7 @@ gdb_write_buf(this, chunk, add)
      * in a "commands" or "define" */
     if (this->note == ANO_NONE
 	    && this->cli_cmd.state == CS_CHOICE
-	    && STRCMP(chunk, ">") == 0)
+	    && strcmp(chunk, ">") == 0)
 	return;
 
     /* do not echo user input as it is already done by readline */
@@ -2182,7 +2182,7 @@ gdb_write_buf(this, chunk, add)
 	    /* now store chunk as the previous line
 	     * from the multi line prompt */
 	    xfree(preprompt);
-	    preprompt = (char_u *)clewn_strsave(chunk);
+	    preprompt = clewn_strsave(chunk);
 	}
 	else
 	{
@@ -2199,7 +2199,7 @@ gdb_write_buf(this, chunk, add)
     int
 gdb_read(this, buff, size, wtime)
     gdb_T *this;
-    char_u *buff;	/* where to write */
+    char *buff;	/* where to write */
     int size;		/* buff size */
     int wtime;		/* msecs time out, -1 wait forever */
 {
@@ -2288,7 +2288,7 @@ close:
     int
 gdb_edit_file(buf, fname, lnum, silent, obs)
     int buf;		/* asm buffer number to edit */
-    char_u *fname;	/* file name */
+    char *fname;	/* file name */
     linenr_T lnum;	/* line number */
     int silent;
     struct obstack *obs;
@@ -2317,7 +2317,7 @@ gdb_oob_send(this, obs)
     struct obstack *obs;
 {
     int keep    = FALSE;    /* when TRUE, do not switch to next oob function */
-    char_u *res = NULL;
+    char *res   = NULL;
     int *pi     = &(this->oob.idx);
     int s_a     = (this->state & GS_ALLOWED);
 
@@ -2355,7 +2355,7 @@ gdb_oob_send(this, obs)
 	    this->oob.cnt = 0;
 
 	    /* send the command to GDB */
-	    write(this->fd, (char *)res, STRLEN(res));
+	    write(this->fd, (char *)res, strlen(res));
 
 	    this->state &= ~GS_ALLOWED;
 	    if (s_a)
@@ -2380,10 +2380,10 @@ quit:
     void
 gdb_oob_receive(this, chunk, obs)
     gdb_T *this;
-    char_u *chunk;	/* response (possibly incomplete) */
+    char *chunk;	/* response (possibly incomplete) */
     struct obstack *obs;
 {
-    char_u *res = NULL;
+    char *res = NULL;
     int s_a = (this->state & GS_ALLOWED);
 
     /* prevent recursive calls to parse_output() since breakpoint
@@ -2476,12 +2476,12 @@ gdb_free_bplist (plist)
     void
 gdb_cmd_type(this, cmd)
     gdb_T *this;
-    char_u *cmd;
+    char *cmd;
 {
     token_T *tok;
-    char_u *ptr;
-    char_u *last;
-    char_u *tail;
+    char *ptr;
+    char *last;
+    char *tail;
 
     this->cmd_type = CMD_ANY;
 
@@ -2497,9 +2497,9 @@ gdb_cmd_type(this, cmd)
     /* find the token 'keyword:tail' that matches cmd */
     for (tok = tokens; tok->keyword != NULL; tok++)
     {
-	if (STRSTR(cmd, tok->keyword) == cmd)
+	if (strstr(cmd, tok->keyword) == cmd)
 	{
-	    last = ptr = cmd + STRLEN(tok->keyword);
+	    last = ptr = cmd + strlen(tok->keyword);
 
 	    /* get first space after token */
 	    while (*last && ! isspace(*last))
@@ -2508,9 +2508,9 @@ gdb_cmd_type(this, cmd)
 	    /* get a copy of last part */
 	    if (last != ptr)
 	    {
-		tail = (char_u *)clewn_strnsave(ptr, last - ptr);
+		tail = clewn_strnsave(ptr, last - ptr);
 
-		if (STRSTR(tok->tail, tail) != tok->tail)
+		if (strstr(tok->tail, tail) != tok->tail)
 		{
 		    xfree(tail);
 		    continue;	/* tail do not match */
@@ -2532,7 +2532,7 @@ clewn_mktmpdir()
     char *(tempdirs[]) = {TEMPDIRNAMES};
     char itmp[TEMPNAMELEN];
     char *tmpdir;
-    char_u *buf;
+    char *buf;
     mode_t umask_save;
     DIR *dir;
     int ret;
@@ -2549,7 +2549,7 @@ clewn_mktmpdir()
 		    || (*(tempdirs[i]) != '$' && (tmpdir = tempdirs[i])))
 	    {
 		/* leave room for "/c1dddddd" and check directory exists*/
-		if (STRLEN(tmpdir) < TEMPNAMELEN - 10
+		if (strlen(tmpdir) < TEMPNAMELEN - 10
 			&& (dir = opendir(tmpdir)) != NULL)
 		{
 		    closedir(dir);
@@ -2567,15 +2567,15 @@ clewn_mktmpdir()
 			if (ret == 0)
 			{
 			    /* expand to full path */
-			    buf = (char_u *)xmalloc(MAXPATHL + 1);
+			    buf = (char *)xmalloc(MAXPATHL + 1);
 
 			    if (! clewn_fullpath(itmp, buf, MAXPATHL, FALSE))
-				STRCPY(buf, itmp);
+				strcpy(buf, itmp);
 
-			    if (*buf != NUL && *(buf + STRLEN(buf) - 1) != '/')
-				STRCAT(buf, "/");
+			    if (*buf != NUL && *(buf + strlen(buf) - 1) != '/')
+				strcat(buf, "/");
 
-			    clewn_tempdir = (char_u *)clewn_strsave(buf);
+			    clewn_tempdir = clewn_strsave(buf);
 			    xfree(buf);
 
 			    return clewn_tempdir != NULL ? OK : FAIL;
@@ -2604,15 +2604,15 @@ clewn_mktmpdir()
  */
     FILE *
 clewn_opentmpfile(filename, fullpath, instance)
-    char_u *filename;
-    char_u **fullpath;
+    char *filename;
+    char **fullpath;
     int instance;
 {
     FILE *stream = NULL;
-    char_u *res  = NULL;
+    char *res    = NULL;
     int i        = instance;
     struct stat st;
-    char_u *buf;
+    char *buf;
 
     if (clewn_tempdir != NULL && filename != NULL && *filename != NUL)
     {
@@ -2673,28 +2673,28 @@ clewn_deltempdir()
  */
     void
 gdb_cat(pdest, src)
-    char_u **pdest;	/* string address to append to */
-    char_u *src;	/* string to append */
+    char **pdest;	/* string address to append to */
+    char *src;		/* string to append */
 {
-    int ldest = (*pdest != NULL ? STRLEN(*pdest) : 0);
-    int lsrc  = (src != NULL ? STRLEN(src) : 0);
-    char_u *res;
+    int ldest = (*pdest != NULL ? strlen(*pdest) : 0);
+    int lsrc  = (src != NULL ? strlen(src) : 0);
+    char *res;
 
     if (lsrc != 0 || *pdest == NULL)
     {
-	res = (char_u *)xmalloc(ldest + lsrc + 1);
+	res = (char *)xmalloc(ldest + lsrc + 1);
 
 	if (ldest == 0)
 	{
 	    if (lsrc != 0)
-		STRCPY(res, src);
+		strcpy(res, src);
 	    else
-		STRCPY(res, "");
+		strcpy(res, "");
 	}
 	else
 	{
-	    STRCPY(res, *pdest);
-	    STRCAT(res, src);	/* assert src != NULL */
+	    strcpy(res, *pdest);
+	    strcat(res, src);	/* assert src != NULL */
 	}
 
 	xfree(*pdest);
@@ -2723,9 +2723,9 @@ print_regerror(errcode, compiled)
  * obs is not NULL.
  * Return NULL if str does not match (or no such sub-match in pattern).
  */
-    char_u *
+    char *
 gdb_regexec(str, id, subid, obs)
-    char_u *str;	    /* string to match against */
+    char *str;		    /* string to match against */
     int id;		    /* pattern id */
     int subid;		    /* sub-match index */
     struct obstack *obs;    /* obstack to use for allocating memory */
@@ -2745,10 +2745,10 @@ gdb_regexec(str, id, subid, obs)
 		    && match[subid].rm_so != -1)
 	    {
 		if (obs != NULL)
-		    return (char_u *)obstack_copy0(obs, str + match[subid].rm_so,
+		    return (char *)obstack_copy0(obs, str + match[subid].rm_so,
 			    (int)(match[subid].rm_eo - match[subid].rm_so));
 		else
-		    return (char_u *)clewn_strnsave(str + match[subid].rm_so,
+		    return clewn_strnsave(str + match[subid].rm_so,
 			    (int)(match[subid].rm_eo - match[subid].rm_so));
 	    }
 	    break;
@@ -2758,22 +2758,22 @@ gdb_regexec(str, id, subid, obs)
 }
 
 /* Return an integer as a string */
-    char_u *
+    char *
 gdb_itoa(i)
     int i;		/* integer to stringify */
 {
     static char buf[NUMBUFLEN];
 
     sprintf(buf, "%ld", (long)i);
-    return (char_u *)buf;
+    return buf;
 }
 
-    char_u *
+    char *
 clewn_stripwhite(string)
-    char_u *string;
+    char *string;
 {
-    char_u *s;
-    char_u *t;
+    char *s;
+    char *t;
 
     for (s = string; isspace(*s); s++)
 	;
@@ -2781,7 +2781,7 @@ clewn_stripwhite(string)
     if (*s == NUL)
 	return s;
 
-    t = s + STRLEN(s) - 1;
+    t = s + strlen(s) - 1;
     while (t > s && isspace(*t))
 	t--;
     *++t = NUL;
@@ -2796,7 +2796,7 @@ clear_readline()
     int len = 0;
 
     if (gdb->prompt != NULL)	    /* find out how many spaces are needed */
-	len = STRLEN(gdb->prompt);
+	len = strlen(gdb->prompt);
     if (rl_line_buffer != NULL)
 	len += strlen(rl_line_buffer);
 
@@ -2812,14 +2812,14 @@ clear_readline()
  * removed a previous identical entry in the history */
     static void
 clewn_add_history(line)
-    char_u *line;
+    char *line;
 {
     HIST_ENTRY * entry;
-    char_u *str;
+    char *str;
     int offset;
 
     /* make a copy */
-    str = (char_u *)clewn_strsave(line);
+    str = clewn_strsave(line);
 
     line = clewn_stripwhite(str);
     if (*line == NUL)
@@ -2833,7 +2833,7 @@ clewn_add_history(line)
     {
 	if((entry = history_get(offset + history_base)) != NULL
 		&& entry->line != NULL
-		&& STRCMP(line, entry->line) == 0
+		&& strcmp(line, entry->line) == 0
 		&& (entry = remove_history(offset)) != NULL)
 	{
 	    if (entry->line != NULL)
@@ -2867,7 +2867,7 @@ clewn_add_history(line)
  */
     static void
 parse_keyline(line)
-    char_u * line;
+    char * line;
 {
     char *end;
     int key;
@@ -2889,7 +2889,7 @@ parse_keyline(line)
 	    /* advance ptr to next separator */
 	    if (*end != ':')
 		return;
-	    line = (char_u *)end;
+	    line = end;
 
 	    /* set key to fnum function key index in table */
 	    if ((key = FUNCTION_INDEX(fnum)) == -1)
@@ -2912,19 +2912,19 @@ parse_keyline(line)
 	    FREE(keymap[key]);
 	    return;
 	}
-	else if ((end = STRCHR(line, ':')) == NULL)
+	else if ((end = strchr(line, ':')) == NULL)
 	    return;
 
 	*end++ = NUL;		    /* terminate command string */
 
 	/* set GDB command in table */
 	xfree(keymap[key]);
-	keymap[key] = (char_u *)clewn_strsave(line);
+	keymap[key] = clewn_strsave(line);
 
 	/* parse %line or %text */
-	if (STRSTR(end, "%line") == (char_u *)end)
+	if (strstr(end, "%line") == end)
 	    SET_KEY_LINE(keyline, key);
-	else if (STRSTR(end, "%text") == (char_u *)end)
+	else if (strstr(end, "%text") == end)
 	    SET_KEY_LINE(keytext, key);
     }
 }
@@ -2935,16 +2935,16 @@ parse_keyline(line)
  */
     static void
 read_keysfile(fname)
-    char_u *fname;
+    char *fname;
 {
     FILE *fd;
-    char_u *ptr;
+    char *ptr;
 
     if ((fd = fopen(fname, "r")) == NULL)
 	return;
 
     /* read the key mappings file */
-    while ((ptr = (char_u *)fgets(clewn_buf, MAX_BUFFSIZE, fd)) != NULL)
+    while ((ptr = fgets(clewn_buf, MAX_BUFFSIZE, fd)) != NULL)
 	parse_keyline(ptr);
 
     fclose(fd);
@@ -3000,12 +3000,12 @@ process_nb_event()
  * If this key is flagged as `%text': build `command text`
  * Return an allocated GDB command.
  */
-    static char_u *
+    static char *
 get_keymap(keyinfo)
     nb_event_T *keyinfo;
 {
-    char_u *res = NULL;
-    char_u *ptr;
+    char *res = NULL;
+    char *ptr;
     char *end;
     int fnum;
     int key;
@@ -3069,7 +3069,7 @@ get_keymap(keyinfo)
 	}
     }
     else
-	return (char_u *)clewn_strsave(keymap[key]);
+	return clewn_strsave(keymap[key]);
 
     return NULL;
 }
@@ -3081,11 +3081,11 @@ get_keymap(keyinfo)
  */
     linenr_T
 searchfor(fname, needle)
-    char_u *fname;
-    char_u *needle;
+    char *fname;
+    char *needle;
 {
     struct obstack obs;	    /* use an obstack for speed */
-    char_u *add;
+    char *add;
     FILE *fd;
     linenr_T lnum;
     int compare;
@@ -3101,7 +3101,7 @@ searchfor(fname, needle)
 	    lnum++;
 	    if ((add = gdb_regexec(clewn_buf, PAT_ADD, 1, &obs)) != NULL)
 	    {
-		if ((compare = STRCMP(add, needle)) == 0)
+		if ((compare = strcmp(add, needle)) == 0)
 		{
 		    obstack_free(&obs, NULL);
 		    fclose(fd);
@@ -3124,7 +3124,7 @@ searchfor(fname, needle)
 /* Show the text in a balloon. */
     void
 gdb_showBalloon(text, obs)
-    char_u * text;
+    char * text;
     struct obstack *obs;
 {
     cnb_showBalloon(text, FALSE, obs);
@@ -3134,10 +3134,10 @@ gdb_showBalloon(text, obs)
     void
 gdb_status(this, status, obs)
     gdb_T *this;
-    char_u *status;	/* gdb status */
+    char *status;	/* gdb status */
     struct obstack *obs;
 {
-    char_u *p, *q;
+    char *p, *q;
 
     if (showBalloon && this != NULL && GDB_STATE(this, GS_UP))
     {
@@ -3155,7 +3155,7 @@ gdb_status(this, status, obs)
 	obstack_strcat(obs, " [");
 	obstack_strcat(obs, status);
 	obstack_strcat0(obs, "]");
-	p = (char_u *)obstack_finish(obs);
+	p = (char *)obstack_finish(obs);
 	cnb_showBalloon(p, TRUE, obs);
     }
 }
@@ -3163,7 +3163,7 @@ gdb_status(this, status, obs)
 /* Display a cmd line busy msg */
     void
 gdb_msg_busy(str)
-    char_u *str;
+    char *str;
 {
 #define BUSY_LINE_SIZE	82
     static char *prop[] = { "/", "-", "\\", "|" };
@@ -3172,7 +3172,7 @@ gdb_msg_busy(str)
     char *p;
 
     /* set busy string */
-    if (str != NULL && STRCMP(str, "FIN") == 0)
+    if (str != NULL && strcmp(str, "FIN") == 0)
     {
 	for (p = busy; *p && p < busy + BUSY_LINE_SIZE - 6; p++)
 	    *p = ' ';
@@ -3186,7 +3186,7 @@ gdb_msg_busy(str)
     else if (str != NULL)
     {
 	busy[0] = '\r';
-	STRNCPY(busy + 1, str, BUSY_LINE_SIZE - 2);
+	strncpy(busy + 1, str, BUSY_LINE_SIZE - 2);
 	busy[BUSY_LINE_SIZE - 1] = NUL;
     }
     else

@@ -17,7 +17,7 @@
  * Free Software Foundation, Inc.,
  * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  *
- * $Id: gdb_lvl3.c 207 2007-12-29 15:37:09Z xavier $
+ * $Id: gdb_lvl3.c 217 2008-10-11 14:29:18Z xavier $
  */
 
 # ifdef HAVE_CLEWN
@@ -46,61 +46,61 @@ typedef struct
 } annotation_T;
 
 static annotation_T annotations[] = {
-    {ANO_PREPROMPT,		"pre-prompt"},
-    {ANO_PROMPT,		"prompt"},
-    {ANO_POSTPROMPT,		"post-prompt"},
-    {ANO_PRECMDS,		"pre-commands"},
-    {ANO_CMDS,			"commands"},
-    {ANO_PREOVERLOAD,		"pre-overload-choice"},
-    {ANO_OVERLOAD,		"overload-choice"},
-    {ANO_PREQUERY,		"pre-query"},
-    {ANO_QUERY,			"query"},
-    {ANO_PREPMT_FORMORE,	"pre-prompt-for-continue"},
-    {ANO_PMT_FORMORE,		"prompt-for-continue"},
-    {ANO_POSTPMT_FORMORE,	"post-prompt-for-continue"},
-    {ANO_QUIT,			"quit"},
-    {ANO_ERROR_BEG,		"error-begin"},
-    {ANO_FRAME_INVALID,		"frames-invalid"},
-    {ANO_BP_INVALID,		"breakpoints-invalid"},
-    {ANO_STARTING,		"starting"},
-    {ANO_STOPPED,		"stopped"},
-    {ANO_EXITED,		"exited"},
-    {ANO_SIGNALLED,		"signalled"},
-    {ANO_BREAKPOINT,		"breakpoint"},
+    {ANO_PREPROMPT,		(char_u *)"pre-prompt"},
+    {ANO_PROMPT,		(char_u *)"prompt"},
+    {ANO_POSTPROMPT,		(char_u *)"post-prompt"},
+    {ANO_PRECMDS,		(char_u *)"pre-commands"},
+    {ANO_CMDS,			(char_u *)"commands"},
+    {ANO_PREOVERLOAD,		(char_u *)"pre-overload-choice"},
+    {ANO_OVERLOAD,		(char_u *)"overload-choice"},
+    {ANO_PREQUERY,		(char_u *)"pre-query"},
+    {ANO_QUERY,			(char_u *)"query"},
+    {ANO_PREPMT_FORMORE,	(char_u *)"pre-prompt-for-continue"},
+    {ANO_PMT_FORMORE,		(char_u *)"prompt-for-continue"},
+    {ANO_POSTPMT_FORMORE,	(char_u *)"post-prompt-for-continue"},
+    {ANO_QUIT,			(char_u *)"quit"},
+    {ANO_ERROR_BEG,		(char_u *)"error-begin"},
+    {ANO_FRAME_INVALID,		(char_u *)"frames-invalid"},
+    {ANO_BP_INVALID,		(char_u *)"breakpoints-invalid"},
+    {ANO_STARTING,		(char_u *)"starting"},
+    {ANO_STOPPED,		(char_u *)"stopped"},
+    {ANO_EXITED,		(char_u *)"exited"},
+    {ANO_SIGNALLED,		(char_u *)"signalled"},
+    {ANO_BREAKPOINT,		(char_u *)"breakpoint"},
 #  ifdef GDB_LVL2_SUPPORT
-    {ANO_SOURCE,		"source"},
-    {ANO_FRAME_BEGIN,		"frame-begin"},
-    {ANO_FRAME_END,		"frame-end"},
-    {ANO_BP_HEADER,		"breakpoints-headers"},
-    {ANO_BP_TABLE,		"breakpoints-table"},
-    {ANO_BP_RECORD,		"record"},
-    {ANO_BP_FIELD0,		"field 0"},
-    {ANO_BP_FIELD1,		"field 1"},
-    {ANO_BP_FIELD2,		"field 2"},
-    {ANO_BP_FIELD3,		"field 3"},
-    {ANO_BP_FIELD4,		"field 4"},
-    {ANO_BP_FIELD5,		"field 5"},
-    {ANO_BP_FIELD6,		"field 6"},
-    {ANO_BP_FIELD7,		"field 7"},
-    {ANO_BP_FIELD8,		"field 8"},
-    {ANO_BP_FIELD9,		"field 9"},
-    {ANO_BP_END,		"breakpoints-table-end"},
-    {ANO_DISP_BEG,		"display-begin"},
-    {ANO_DISP_NUMEND,		"display-number-end"},
-    {ANO_DISP_FMT,		"display-format"},
-    {ANO_DISP_EXP,		"display-expression"},
-    {ANO_DISP_EXPEND,		"display-expression-end"},
-    {ANO_DISP_VALUE,		"display-value"},
-    {ANO_DISP_END,		"display-end"},
-    {ANO_FIELD_BEG,		"field-begin"},
-    {ANO_FIELD_NAMEND,		"field-name-end"},
-    {ANO_FIELD_VALUE,		"field-value"},
-    {ANO_FIELD_END,		"field-end"},
-    {ANO_ARRAY_BEG,		"array-section-begin"},
-    {ANO_ARRAY_ELT,		"elt"},
-    {ANO_ARRAY_ELTREP,		"elt-rep"},
-    {ANO_ARRAY_ELTEND,		"elt-rep-end"},
-    {ANO_ARRAY_END,		"array-section-end"},
+    {ANO_SOURCE,		(char_u *)"source"},
+    {ANO_FRAME_BEGIN,		(char_u *)"frame-begin"},
+    {ANO_FRAME_END,		(char_u *)"frame-end"},
+    {ANO_BP_HEADER,		(char_u *)"breakpoints-headers"},
+    {ANO_BP_TABLE,		(char_u *)"breakpoints-table"},
+    {ANO_BP_RECORD,		(char_u *)"record"},
+    {ANO_BP_FIELD0,		(char_u *)"field 0"},
+    {ANO_BP_FIELD1,		(char_u *)"field 1"},
+    {ANO_BP_FIELD2,		(char_u *)"field 2"},
+    {ANO_BP_FIELD3,		(char_u *)"field 3"},
+    {ANO_BP_FIELD4,		(char_u *)"field 4"},
+    {ANO_BP_FIELD5,		(char_u *)"field 5"},
+    {ANO_BP_FIELD6,		(char_u *)"field 6"},
+    {ANO_BP_FIELD7,		(char_u *)"field 7"},
+    {ANO_BP_FIELD8,		(char_u *)"field 8"},
+    {ANO_BP_FIELD9,		(char_u *)"field 9"},
+    {ANO_BP_END,		(char_u *)"breakpoints-table-end"},
+    {ANO_DISP_BEG,		(char_u *)"display-begin"},
+    {ANO_DISP_NUMEND,		(char_u *)"display-number-end"},
+    {ANO_DISP_FMT,		(char_u *)"display-format"},
+    {ANO_DISP_EXP,		(char_u *)"display-expression"},
+    {ANO_DISP_EXPEND,		(char_u *)"display-expression-end"},
+    {ANO_DISP_VALUE,		(char_u *)"display-value"},
+    {ANO_DISP_END,		(char_u *)"display-end"},
+    {ANO_FIELD_BEG,		(char_u *)"field-begin"},
+    {ANO_FIELD_NAMEND,		(char_u *)"field-name-end"},
+    {ANO_FIELD_VALUE,		(char_u *)"field-value"},
+    {ANO_FIELD_END,		(char_u *)"field-end"},
+    {ANO_ARRAY_BEG,		(char_u *)"array-section-begin"},
+    {ANO_ARRAY_ELT,		(char_u *)"elt"},
+    {ANO_ARRAY_ELTREP,		(char_u *)"elt-rep"},
+    {ANO_ARRAY_ELTEND,		(char_u *)"elt-rep-end"},
+    {ANO_ARRAY_END,		(char_u *)"array-section-end"},
 #  endif
     {0,				NULL}
 };
@@ -183,7 +183,7 @@ gdb_docmd_cli(this, cmd)
 	this->cmd_type = CMD_ANY;
 	goto empty_cmd;
     }
-    cmd = (char_u *)clewn_strsave(cmd);
+    cmd = (char_u *)clewn_strsave((char *)cmd);
 
     /* remove illegal characters */
     for (ptr = last = cmd; *last != NUL; last++)
@@ -219,14 +219,14 @@ gdb_docmd_cli(this, cmd)
 
 	/* handle completion for all non-gdb commands */
 	if (this->cmd_type == CMD_RESTART) {
-	    gdb_setwinput((gdb_handle_T *)this, "cl_restart ");
+	    gdb_setwinput((gdb_handle_T *)this, (char_u *)"cl_restart ");
 	    xfree(cmd);
 	    this->oob.state &= ~OS_CMD;
 	    return;
 	}
 	else if (this->cmd_type == CMD_CREATEVAR)
 	{
-	    gdb_setwinput((gdb_handle_T *)this, "createvar ");
+	    gdb_setwinput((gdb_handle_T *)this, (char_u *)"createvar ");
 	    xfree(cmd);
 	    this->oob.state &= ~OS_CMD;
 	    return;
@@ -244,7 +244,7 @@ gdb_docmd_cli(this, cmd)
 #  ifndef FEAT_GDB  /* Clewn follows GDB behavior with empty commands */
     if (*cmd == NUL)
     {
-	gdb_send_cmd(this, "\n");
+	gdb_send_cmd(this, (char_u *)"\n");
 	xfree(cmd);
 	return;
     }
@@ -310,7 +310,7 @@ gdb_docmd_cli(this, cmd)
     {
 	res = NULL;
 	gdb_cat(&res, cmd);
-	gdb_cat(&res, "\n");
+	gdb_cat(&res, (char_u *)"\n");
 	xfree(cmd);
 	cmd = res;
     }
@@ -319,7 +319,7 @@ send:
     xfree(cmd);
     return;
 empty_cmd:
-    gdb_send_cmd(this, " \n");
+    gdb_send_cmd(this, (char_u *)" \n");
     xfree(cmd);
     return;
 }
@@ -345,7 +345,7 @@ process_cmd(this, cmd)
     /* make a copy so we can mess with it */
     if (cmd == NULL || *cmd == NUL)
 	return NULL;
-    cmd = (char_u *)clewn_strsave(cmd);
+    cmd = (char_u *)clewn_strsave((char *)cmd);
 
     gdb_cmd_type(this, cmd);	/* get cmd type */
 
@@ -362,7 +362,7 @@ process_cmd(this, cmd)
 	    /* replace */
 	    this->cmd_type = CMD_DISPLAY;
 	    FREE(cmd);
-	    gdb_cat(&cmd, "display ");
+	    gdb_cat(&cmd, (char_u *)"display ");
 	    gdb_cat(&cmd, res);
 	    xfree(res);
 
@@ -396,7 +396,7 @@ process_cmd(this, cmd)
     if ((res = gdb_regexec(cmd, PAT_PID, 2, NULL)) != NULL)
 #  endif
     {
-	if (getpid() == atoi(res))
+	if (getpid() == atoi((char *)res))
 	{
 	    EMSG(_("I refuse to debug myself!"));
 	    xfree(cmd);
@@ -545,7 +545,7 @@ gdb_send_cmd(this, cmd)
     /* make a copy so we can mess with it */
     if (cmd == NULL || (len = STRLEN(cmd)) == 0 )
 	return;
-    cmd = (char_u *)clewn_strsave(cmd);
+    cmd = (char_u *)clewn_strsave((char *)cmd);
 
     /* paranoia: trim after NL */
     if ((res = STRCHR(cmd, (int)NL)) != NULL)
@@ -644,7 +644,7 @@ gdb_send_cmd(this, cmd)
 	this->cli_cmd.state = CS_PENDING;
 
 	xfree(this->cli_cmd.gdb);
-	this->cli_cmd.gdb = (char_u *)clewn_strsave(cmd + offset);
+	this->cli_cmd.gdb = (char_u *)clewn_strsave((char *)(cmd + offset));
 	*(this->cli_cmd.gdb + len - 1) = NUL;	/* remove <Tab> */
     }
 write_answer:
@@ -688,13 +688,13 @@ gdb_parse_output_cli(this)
 
     /* read gdb data */
     if (this == NULL || ! GDB_STATE(this, GS_UP)
-	    || gdb_read(this, gdb_buf, MAX_BUFFSIZE, 0) <= 0)
+	    || gdb_read(this, (char_u *)gdb_buf, MAX_BUFFSIZE, 0) <= 0)
 	return FALSE;
 
     (void)obstack_init(&obs);
 
     /* Process line after line */
-    for (start = end = gdb_buf; end != NULL; start = end)
+    for (start = end = (char_u *)gdb_buf; end != NULL; start = end)
     {
 	/* Get next line */
 	if ((end = STRCHR(start, NL)) != NULL)
@@ -762,9 +762,9 @@ gdb_parse_output_cli(this)
 		if (this->line == NULL && *line != '\032')
 		{
 		    if (IS_OOBACTIVE(this))
-			gdb_oob_receive(this, "", &obs);
+			gdb_oob_receive(this, (char_u *)"", &obs);
 		    else
-			gdb_write_buf(this, "", TRUE);
+			gdb_write_buf(this, (char_u *)"", TRUE);
 		}
 
 #  ifdef FIX_CONCATENATION_WRITE
@@ -832,7 +832,7 @@ gdb_parse_output_cli(this)
 #   endif
 		    && this->note == ANO_DISP_END)
 	    {
-		gdb_process_display(this, "", &obs);
+		gdb_process_display(this, (char_u *)"", &obs);
 	    }
 #  endif
 
@@ -864,7 +864,7 @@ gdb_parse_output_cli(this)
 		&& end == NULL)
 	{
 	    xfree(this->annotation);
-	    this->annotation = clewn_strsave(line);
+	    this->annotation = (char_u *)clewn_strsave((char *)line);
 	    break;
 	}
 	else
@@ -897,7 +897,7 @@ gdb_parse_output_cli(this)
 			this->oob.state &= ~OS_CMD;	/* enable next command */
 			xfree(this->prompt);
 			if (line != NULL)
-			    this->prompt = (char_u *)clewn_strsave(line);
+			    this->prompt = (char_u *)clewn_strsave((char *)line);
 			else
 			    this->prompt = (char_u *)clewn_strsave(
 				"---type <return> to continue, or q <return> to quit---");
@@ -990,7 +990,7 @@ gdb_parse_output_cli(this)
 		    if (this->height == 0		/* height not set */
 			    && this->cli_cmd.state == CS_CHOICE)
 		    {
-			char *ptr;
+			char_u *ptr;
 
 			/* discard "^\rT_CE\r" which is sent by readline
 			 * after answering to a prompt in a completion list
@@ -1007,7 +1007,7 @@ gdb_parse_output_cli(this)
 #  else
 		    /* do not write the query prompt */
 		    if (this->cli_cmd.state == CS_QUERY)
-			gdb_write_buf(this, "", TRUE);
+			gdb_write_buf(this, (char_u *)"", TRUE);
 		    else
 		    {
 #  ifdef FIX_CONCATENATION_WRITE
@@ -1024,7 +1024,7 @@ gdb_parse_output_cli(this)
 		}
 
 		xfree(this->line);
-		this->line = (line != NULL ? clewn_strsave(line) : NULL);
+		this->line = (line != NULL ? (char_u *)clewn_strsave((char *)line) : NULL);
 	    }
 
 #  ifdef FIX_CONCATENATION_WRITE
@@ -1111,7 +1111,7 @@ process_annotation(this, str, obs)
 	    {
 		xfree(this->prompt);
 		if (this->line != NULL)
-		    this->prompt = (char_u *)clewn_strsave(this->line);
+		    this->prompt = (char_u *)clewn_strsave((char *)this->line);
 		else
 		    this->prompt = (char_u *)clewn_strsave("(gdb)   ");
 	    }
@@ -1135,7 +1135,7 @@ process_annotation(this, str, obs)
 	    {
 		xfree(this->prompt);
 		if (this->line != NULL)
-		    this->prompt = (char_u *)clewn_strsave(this->line);
+		    this->prompt = (char_u *)clewn_strsave((char *)this->line);
 		else
 		    this->prompt = (char_u *)clewn_strsave(">  ");
 	    }
@@ -1163,7 +1163,7 @@ process_annotation(this, str, obs)
 	    {
 		xfree(this->prompt);
 		if (this->line != NULL)
-		    this->prompt = (char_u *)clewn_strsave(this->line);
+		    this->prompt = (char_u *)clewn_strsave((char *)this->line);
 		else
 		    this->prompt = (char_u *)clewn_strsave(">   ");
 	    }
@@ -1178,10 +1178,10 @@ process_annotation(this, str, obs)
 		if (this->oob.state & OS_INTR)
 		{
 		    clewn_beep();
-		    gdb_send_cmd(this, "q\n");	/* abort */
+		    gdb_send_cmd(this, (char_u *)"q\n");	/* abort */
 		}
 		else
-		    gdb_send_cmd(this, "\n");	/* get more lines */
+		    gdb_send_cmd(this, (char_u *)"\n");	/* get more lines */
 	    }
 	    break;
 
@@ -1212,7 +1212,7 @@ process_annotation(this, str, obs)
 
 	    FREE(this->frame_pc);
 	    this->state &= ~GS_STOPPED;
-	    gdb_status(this, "running...", obs);
+	    gdb_status(this, (char_u *)"running...", obs);
 
 	    if (this->mode == GDB_MODE_LVL3)
 	    {
@@ -1242,7 +1242,7 @@ process_annotation(this, str, obs)
 
 	case ANO_STOPPED:
 	    this->state |= GS_STOPPED;
-	    gdb_status(this, "stopped", obs);
+	    gdb_status(this, (char_u *)"stopped", obs);
 #  ifdef GDB_LVL2_SUPPORT
 #   ifdef FEAT_GDB
 	    if (this->var_buf != NULL)
@@ -1258,7 +1258,7 @@ process_annotation(this, str, obs)
 	    FREE(this->frame_pc);
 
 	    this->state |= GS_STOPPED;
-	    gdb_status(this, "exited", obs);
+	    gdb_status(this, (char_u *)"exited", obs);
 
 #  ifdef FEAT_GDB
 	    /* remove phantom highlite */
@@ -1269,7 +1269,7 @@ process_annotation(this, str, obs)
 	/* Breakpoint hit */
 	case ANO_BREAKPOINT:
 	    /* Look for this breakpoint in bpinfo list */
-	    if (str != NULL && (bp_number = atoi(str)) > 0)
+	    if (str != NULL && (bp_number = atoi((char *)str)) > 0)
 	    {
 		for (r = this->bpinfo; r != NULL; r = r->next)
 		{
@@ -1338,7 +1338,7 @@ process_annotation(this, str, obs)
 		    if ((line = gdb_regexec(str, PAT_SOURCE, 2, obs)) != NULL)
 		    {
 			file = gdb_regexec(str, PAT_SOURCE, 1, obs);
-			linenumber = atoi(line);
+			linenumber = atoi((char *)line);
 			gdb_fr_set(this, file, &linenumber, obs);
 		    }
 
@@ -1440,9 +1440,9 @@ process_completion(cmd, line, obs)
 			*(res + len) = NUL;
 		    }
 		    xfree(cmd->readline);
-		    cmd->readline = (char_u *)clewn_strsave(cmd->echoed);
+		    cmd->readline = (char_u *)clewn_strsave((char *)cmd->echoed);
 		    cmd->state = CS_DONE;
-		    return (char_u *)clewn_strsave(cmd->readline);
+		    return (char_u *)clewn_strsave((char *)cmd->readline);
 		}
 	    }
 
@@ -1453,7 +1453,7 @@ process_completion(cmd, line, obs)
 		clewn_beep();
 		cmd->state = CS_DONE;
 		return (cmd->readline != NULL ?
-			(char_u *)clewn_strsave(cmd->readline) : NULL);
+			(char_u *)clewn_strsave((char *)cmd->readline) : NULL);
 	    }
 
 	    if (cmd->cnt > 1)
@@ -1488,9 +1488,9 @@ eol_choices(cmd, obs)
     if (cmd->echoed != NULL && STRSTR(cmd->echoed, new) == cmd->echoed)
     {
 	xfree(cmd->readline);
-	cmd->readline = (char_u *)clewn_strsave(cmd->echoed);
+	cmd->readline = (char_u *)clewn_strsave((char *)cmd->echoed);
 	cmd->state = CS_DONE;
-	return (char_u *)clewn_strsave(cmd->echoed);
+	return (char_u *)clewn_strsave((char *)cmd->echoed);
     }
     return NULL;
 }
@@ -1568,11 +1568,11 @@ gdb_lvl3_init(this)
 gdb_setup_cli(this)
     gdb_T *this;
 {
-    char_u *err   = NULL;
+    char *err     = NULL;
     int needle    = FALSE;	/* defines when we can start writing to gdb console */
     int gdb_cnt   = 0;		/* count of received "(gdb)" prompts */
     int lvl3_mode = FALSE;	/* level */
-    char_u *buff  = gdb_buf;    /* can't add an int to the reference to an array */
+    char_u *buff  = (char_u *)gdb_buf;/* can't add an int to the reference to an array */
     char * tty_name = NULL;
 #   ifndef FEAT_GDB
     char tmp[128];
@@ -1591,7 +1591,7 @@ gdb_setup_cli(this)
 
     /* discard gdb output till we find the needle SG_VERSION
      * MAX_BUFFSIZE must be greater than max gdb line length */
-    for (last = gdb_buf; buff + MAX_BUFFSIZE - last > 1; )
+    for (last = (char_u *)gdb_buf; buff + MAX_BUFFSIZE - last > 1; )
     {
 	if ((len = gdb_read(this, last,
 			buff + MAX_BUFFSIZE - last, SG_TIMEOUT)) < 0)
@@ -1603,7 +1603,7 @@ gdb_setup_cli(this)
 	    break;
 
 	last += len;
-	ptr = gdb_buf;
+	ptr = (char_u *)gdb_buf;
 
 	/* First step: determine which level, process line by line */
 	do
@@ -1651,7 +1651,7 @@ gdb_setup_cli(this)
 		 * large output (in get_asm for example or any user cmd) */
 		write(this->fd, SG_HEIGHT, strlen(SG_HEIGHT));
 		lpp_lines = gdb_itoa(LPP_LINES);
-		write(this->fd, lpp_lines, strlen(lpp_lines));
+		write(this->fd, (char *)lpp_lines, strlen((char *)lpp_lines));
 		write(this->fd, "\n", 1);
 		write(this->fd, SG_WIDTH, strlen(SG_WIDTH));
 		write(this->fd, SG_EDITING, strlen(SG_EDITING));
@@ -1669,9 +1669,9 @@ gdb_setup_cli(this)
 		if (isatty(1) && (tty_name=ttyname(1)) != NULL) {
 		    char_u * res = NULL;
 
-		    gdb_cat(&res, "server tty ");
+		    gdb_cat(&res, (char_u *)"server tty ");
 		    gdb_cat(&res, tty_name);
-		    gdb_cat(&res, "\n");
+		    gdb_cat(&res, (char_u *)"\n");
 		    write(this->fd, res, STRLEN(res));
 		    xfree(res);
 		}
@@ -1700,11 +1700,11 @@ gdb_setup_cli(this)
 	    if (needle && this->note == ANO_POSTPROMPT)
 	    {
 		/* store a partial last line for later parse_output */
-                if ((line = strrchr((char *)gdb_buf, (int)NL)) != NULL
+                if ((line = (char_u *)strrchr(gdb_buf, (int)NL)) != NULL
                         && *(line + 1) != NUL)
                 {
                     xfree(this->line);
-                    this->line = (char_u *)clewn_strsave(line + 1);
+                    this->line = (char_u *)clewn_strsave((char *)(line + 1));
                     this->annoted = TRUE;
                 }
 
@@ -1717,7 +1717,7 @@ gdb_setup_cli(this)
 
 		    this->syntax = TRUE;	/* force syntax highlite */
 #   ifdef FEAT_GDB
-		    gdb_write_buf(this, SG_INTRO_3, TRUE);
+		    gdb_write_buf(this, (char_u *)SG_INTRO_3, TRUE);
 #   else
 		    sprintf(tmp, SG_INTRO_3, this->version);
 		    gdb_write_buf(this, tmp, TRUE);
@@ -1751,7 +1751,7 @@ gdb_setup_cli(this)
 #   endif
 
 		    this->syntax = TRUE;	/* force syntax highlite */
-		    gdb_write_buf(this, SG_INTRO_2, TRUE);
+		    gdb_write_buf(this, (char_u *)SG_INTRO_2, TRUE);
 		    this->syntax = FALSE;
 
 #   ifdef FEAT_GDB   /* write unconditionally with Clewn */
@@ -1781,11 +1781,11 @@ gdb_setup_cli(this)
 	} while ((ptr = parse_note(this, ptr)) != NULL);
 
 	/* left shift buffer to last start of line */
-	if ((ptr = strrchr((char *)gdb_buf, (int)NL)) != NULL)
+	if ((ptr = (char_u *)strrchr((char *)gdb_buf, (int)NL)) != NULL)
 	{
 	    len = STRLEN(ptr + 1);
 	    clewn_memmove(gdb_buf, ptr + 1, len);
-	    last = gdb_buf + len;
+	    last = (char_u *)gdb_buf + len;
 	}
     }
 
@@ -1799,7 +1799,7 @@ gdb_setup_cli(this)
 #   endif
 
     this->syntax = TRUE;	/* force syntax highlite */
-    gdb_write_buf(this, SG_INTRO_2, TRUE);
+    gdb_write_buf(this, (char_u *)SG_INTRO_2, TRUE);
     this->syntax = FALSE;
 
     gdb_lvl2_init(this);
@@ -1856,7 +1856,7 @@ gdb_print_value(this, state, line, obs)
 	    if (this->lvl3.result != NULL
 		    && (ptr = STRSTR(this->lvl3.result, PRINT_VALUE)) != NULL
 		    && (ptr += strlen(PRINT_VALUE))
-		    && (quote = strrchr(ptr, '"')) != NULL)
+		    && (quote = (char_u *)strrchr(ptr, '"')) != NULL)
 	    {
 		*quote = NUL;
 		obstack_strcat(obs, "\" ");
@@ -1947,13 +1947,13 @@ gdb_get_frame(this, state, line, obs)
 	    if (this->oob_result != NULL
 		    && (this->frame_pc = gdb_regexec(this->oob_result, PAT_FRAME, 1, NULL)) != NULL) {
 		xfree(this->asm_add);
-		this->asm_add = (char_u *)clewn_strsave(this->frame_pc);
+		this->asm_add = (char_u *)clewn_strsave((char *)this->frame_pc);
 	    }
 	    else {
 		if (this->pc != NULL) {
-		    this->frame_pc = (char_u *)clewn_strsave(this->pc);
+		    this->frame_pc = (char_u *)clewn_strsave((char *)this->pc);
 		    xfree(this->asm_add);
-		    this->asm_add = (char_u *)clewn_strsave(this->frame_pc);
+		    this->asm_add = (char_u *)clewn_strsave((char *)this->frame_pc);
 		}
 	    }
 
@@ -1993,7 +1993,7 @@ gdb_info_frame(this, state, line, obs)
 	    this->frame_curlvl = -1;
 	    if (this->lvl3.result != NULL
 		    && (res = gdb_regexec(this->lvl3.result, PAT_INFO_FRAME, 1, NULL)) != NULL) {
-		this->frame_curlvl = atoi(res);
+		this->frame_curlvl = atoi((char *)res);
 		xfree(res);
 	    }
 
@@ -2034,7 +2034,7 @@ gdb_stack_frame(this, state, line, obs)
 		obstack_strcat(obs, "server interpreter-exec mi \"-stack-list-frames ");
 		obstack_strcat(obs, tmp);
 		obstack_strcat0(obs, "\"\n");
-		return (char_u *)obstack_finish(obs);
+		return (char *)obstack_finish(obs);
 	    }
 	    break;
 
@@ -2051,7 +2051,7 @@ gdb_stack_frame(this, state, line, obs)
 		    && (pnum = STRSTR(this->lvl3.result, SOURCE_LINENUM)) != NULL)
 	    {
 		pnum += strlen(SOURCE_FILENAME);
-		lnum = atoi(pnum);
+		lnum = atoi((char *)pnum);
 
 		ptr += strlen(SOURCE_FILENAME);
 
@@ -2064,7 +2064,7 @@ gdb_stack_frame(this, state, line, obs)
 		    if (this->frame_fname == NULL
 			    || STRCMP(this->frame_fname, fname) != 0 || this->frame_lnum != lnum) {
 			FREE(this->frame_fname);
-			this->frame_fname = clewn_strsave(fname);
+			this->frame_fname = (char_u *)clewn_strsave((char *)fname);
 			this->frame_lnum = lnum;
 			rc = gdb_fr_set(this, fname, &lnum, obs);
 		    }
@@ -2100,16 +2100,16 @@ gdb_get_sfile(this, state, line, obs)
 		    && (res = gdb_regexec(line, PAT_SFILE, 1, obs)) != NULL
 		    && (this->sfile == NULL || STRCMP(res, this->sfile) != 0))
 	    {
-		gdb_status(this, "new symbols", obs);
+		gdb_status(this, (char_u *)"new symbols", obs);
 		xfree(this->sfile);
-		this->sfile = (char_u *)clewn_strsave(res);
+		this->sfile = (char_u *)clewn_strsave((char *)res);
 	    }
 	    break;
 
 	case OOB_COMPLETE:
 	    if (this->oob.cnt == 0)
 	    {
-		gdb_status(this, "empty target", obs);
+		gdb_status(this, (char_u *)"empty target", obs);
 		FREE(this->sfile);
 	    }
 	    break;
@@ -2236,12 +2236,12 @@ gdb_get_pwd(this, state, line, obs)
 	    if (this->lvl3.result != NULL
 		    && (ptr = STRSTR(this->lvl3.result, CWD_VALUE)) != NULL
 		    && (ptr += strlen(CWD_VALUE))
-		    && (quote = strrchr(ptr, '"')) != NULL)
+		    && (quote = (char_u *)strrchr(ptr, '"')) != NULL)
 	    {
 		*quote = NUL;
-		gdb_cat(&res, "cd ");
+		gdb_cat(&res, (char_u *)"cd ");
 		gdb_cat(&res, ptr);
-		gdb_cat(&res, "\n");
+		gdb_cat(&res, (char_u *)"\n");
 		xfree(this->pwd);
 		this->pwd = res;
 	    }
@@ -2284,7 +2284,7 @@ gdb_get_args(this, state, line, obs)
 	    if (this->lvl3.result != NULL
 		    && (ptr = STRSTR(this->lvl3.result, ARGS_VALUE)) != NULL
 		    && (ptr += strlen(ARGS_VALUE))
-		    && (quote = strrchr(ptr, '"')) != NULL)
+		    && (quote = (char_u *)strrchr(ptr, '"')) != NULL)
 	    {
 		*quote = NUL;
 		gdb_cat(&res, "set args ");
@@ -2440,7 +2440,7 @@ get_lastbp(this, state, line, obs)
 
 		/* last record */
 		if (record != NULL
-			&& (bp_num = atoi(record + strlen(BKPT_RECORD))) > 0)
+			&& (bp_num = atoi((char *)(record + strlen(BKPT_RECORD)))) > 0)
 		{
 		    /* look it up in bpinfo list */
 		    for (p = this->bpinfo; p != NULL; p = p->next)
@@ -2486,7 +2486,7 @@ gdb_get_asmfunc(this, state, line, obs)
 		obstack_strcat(obs, "server info symbol 0x");
 		obstack_strcat(obs, this->asm_add);
 		obstack_strcat0(obs, "\n");
-		return (char_u *)obstack_finish(obs);
+		return (char *)obstack_finish(obs);
 	    }
 	    FREE(this->asm_func);
 	    break;
@@ -2522,7 +2522,7 @@ gdb_get_asmfunc_hack(this, state, line, obs)
 		obstack_strcat(obs, "server print/a 0x");
 		obstack_strcat(obs, this->asm_add);
 		obstack_strcat0(obs, "\n");
-		return (char_u *)obstack_finish(obs);
+		return (char *)obstack_finish(obs);
 	    }
 	    break;
 
@@ -2603,7 +2603,7 @@ gdb_get_asm(this, state, line, obs)
 		obstack_strcat(obs, "server disassemble 0x");
 		obstack_strcat(obs, this->asm_add);
 		obstack_strcat0(obs, "\n");
-		return (char_u *)obstack_finish(obs);
+		return (char *)obstack_finish(obs);
 	    }
 	    this->pool.hilite = FALSE;
 	    break;
@@ -2632,7 +2632,7 @@ gdb_get_asm(this, state, line, obs)
 		gdb_msg_busy(NULL);
 
 	    xfree(this->line);
-	    this->line = (char_u *)clewn_strsave(line);
+	    this->line = (char_u *)clewn_strsave((char *)line);
 	    break;
 
 	case OOB_COMPLETE:
@@ -2648,7 +2648,7 @@ gdb_get_asm(this, state, line, obs)
 		    while (lnum-- > 0)
 			ml_delete(buf->b_ml.ml_line_count, FALSE);
 
-		    ml_append(0, ASM_ABORTED, 0, 0);
+		    ml_append(0, (char_u *)ASM_ABORTED, 0, 0);
 		    lnum = buf->b_ml.ml_line_count;
 		    changed_lines(1, 0, lnum, lnum);
 		    curbuf = oldbuf;
@@ -2792,7 +2792,7 @@ gdb_get_asm(this, state, line, obs)
 		gdb_msg_busy(NULL);
 
 	    xfree(this->line);
-	    this->line = (char_u *)clewn_strsave(line);
+	    this->line = (char_u *)clewn_strsave((char *)line);
 	    break;
 
 	case OOB_COMPLETE:
@@ -2994,7 +2994,7 @@ process_record(this, record, obs)
     this->record->next		= NULL;
 
     /* breakpoint number */
-    this->record->id = atoi(record + strlen(BKPT_RECORD));
+    this->record->id = atoi((char *)(record + strlen(BKPT_RECORD)));
 
     /* enabled state */
     if ((ptr = STRSTR(record, BKPT_ENABLED)) != NULL
@@ -3119,7 +3119,7 @@ oob_cmd:
 			obstack_strcat(obs, "server interpreter-exec mi \"-var-create - * (");
 			obstack_strcat(obs, obj->expression);
 			obstack_strcat0(obs, ")\"\n");
-			return (char_u *)obstack_finish(obs);
+			return (char *)obstack_finish(obs);
 		    }
 		    else
 		    {
@@ -3170,7 +3170,7 @@ oob_cmd:
 			obstack_strcat(obs, "server interpreter-exec mi \"-var-delete var");
 			obstack_strcat(obs, obj->name);
 			obstack_strcat0(obs, "\"\n");
-			return (char_u *)obstack_finish(obs);
+			return (char *)obstack_finish(obs);
 		    }
 		}
 
@@ -3186,7 +3186,7 @@ oob_cmd:
 			obstack_strcat(obs, "server interpreter-exec mi \"-var-list-children var");
 			obstack_strcat(obs, obj->name);
 			obstack_strcat0(obs, "\"\n");
-			return (char_u *)obstack_finish(obs);
+			return (char *)obstack_finish(obs);
 		    }
 		}
 
@@ -3220,7 +3220,7 @@ oob_cmd:
 			this->lvl3.varnext_cmd = VCMD_PRINT;
 			this->lvl3.varcmd = VCMD_FORMAT;
 
-			return (char_u *)obstack_finish(obs);
+			return (char *)obstack_finish(obs);
 		    }
 		    else
 		    {
@@ -3239,7 +3239,7 @@ oob_cmd:
 		    obstack_strcat(obs, "server interpreter-exec mi \"-var-update var");
 		    obstack_strcat(obs, obj->name);
 		    obstack_strcat0(obs, "\"\n");
-		    return (char_u *)obstack_finish(obs);
+		    return (char *)obstack_finish(obs);
 		}
 
 		/* print */
@@ -3253,7 +3253,7 @@ oob_cmd:
 		    obstack_strcat(obs, " ");
 		    obstack_strcat(obs, obj->expression);
 		    obstack_strcat0(obs, "\n");
-		    return (char_u *)obstack_finish(obs);
+		    return (char *)obstack_finish(obs);
 		}
 		
 		/* evaluate object expression */
@@ -3264,7 +3264,7 @@ oob_cmd:
 		    obstack_strcat(obs, "server interpreter-exec mi \"-var-evaluate-expression var");
 		    obstack_strcat(obs, obj->name);
 		    obstack_strcat0(obs, "\"\n");
-		    return (char_u *)obstack_finish(obs);
+		    return (char *)obstack_finish(obs);
 		}
 	    }
 	    break;
@@ -3337,11 +3337,11 @@ varobj_complete(this, obs)
 			&& (quote = STRCHR(ptr, '"')) != NULL
 			&& (child = STRSTR(this->lvl3.result, VOBJ_CHILD)) != NULL)
 		{
-		    obj->name = (char_u *)clewn_strnsave(ptr, (quote - ptr));
-		    obj->children = (atoi(child + strlen(VOBJ_CHILD)) > 0);
+		    obj->name = (char_u *)clewn_strnsave((char *)ptr, (quote - ptr));
+		    obj->children = (atoi((char *)(child + strlen(VOBJ_CHILD))) > 0);
 
 		    FREE(this->lvl3.result);
-		    return (char_u *)obj;   /* next command */
+		    return (char *)obj;   /* next command */
 		}
 		else
 		{
@@ -3349,7 +3349,7 @@ varobj_complete(this, obs)
 		    remove_object(this, obj);
 		    FREE(this->lvl3.result);
 		    this->lvl3.varnext_cmd = VCMD_INIT;
-		    return (char_u *)this->lvl3.varitem;  /* next object */
+		    return (char *)this->lvl3.varitem;  /* next object */
 		}
 		break;
 
@@ -3357,15 +3357,15 @@ varobj_complete(this, obs)
 		remove_object(this, obj);
 		FREE(this->lvl3.result);
 		this->lvl3.varnext_cmd = VCMD_INIT;
-		return (char_u *)this->lvl3.varitem;  /* next object */
+		return (char *)this->lvl3.varitem;  /* next object */
 
 	    case VCMD_CHILDREN:
 		FREE(this->lvl3.result);
-		return (char_u *)obj;   /* next command */
+		return (char *)obj;   /* next command */
 
 	    case VCMD_FORMAT:
 		FREE(this->lvl3.result);
-		return (char_u *)obj;   /* next command */
+		return (char *)obj;   /* next command */
 
 	    case VCMD_UPDATE:
 		if (this->lvl3.result != NULL
@@ -3382,7 +3382,7 @@ varobj_complete(this, obs)
 		    {
 			/* object needs updating */
 			FREE(this->lvl3.result);
-			return (char_u *)obj;   /* next command */
+			return (char *)obj;   /* next command */
 		    }
 		}
 		else
@@ -3401,7 +3401,7 @@ varobj_complete(this, obs)
 		    obj->state &= ~VS_ERROR;
 		    this->lvl3.varnext_cmd = VCMD_EVALUATE;
 		    FREE(this->lvl3.result);
-		    return (char_u *)obj;   /* next command */
+		    return (char *)obj;   /* next command */
 		}
 		
 		/* build the display line including ={*}, the hiliting sign */
@@ -3471,7 +3471,7 @@ varobj_complete(this, obs)
 		if (this->lvl3.result != NULL
 			&& (ptr = STRSTR(this->lvl3.result, VOBJ_VALUE)) != NULL
 			&& (ptr += strlen(VOBJ_VALUE))
-			&& (quote = strrchr(ptr, '"')) != NULL)
+			&& (quote = (char_u *)strrchr((char *)ptr, '"')) != NULL)
 		{
 		    res = (char_u *)obstack_copy0(obs, ptr, (quote - ptr));
 
@@ -3511,7 +3511,7 @@ nextobj:
     /* When not at the end of varlist, return a non null object
      * to get gdb_oob_send() to call again varobj_update() for
      * the next object */
-    return (char_u *)this->lvl3.varitem;
+    return (char *)this->lvl3.varitem;
 }
 
 #   define OBHI_CHANGED	    " ={*} "
@@ -3793,7 +3793,7 @@ gdb_process_record(this, address, at, line, source, obs)
     }
 
     /* A plain breakpoint */
-    else if (line != NULL && (record->lnum = atoi(line)) > 0
+    else if (line != NULL && (record->lnum = atoi((char *)line)) > 0
 	    && source != NULL)
     {
 	bp_file = obstack_strsave(obs, source);
@@ -3973,7 +3973,7 @@ gdb_process_record(this, address, at, line, source, obs)
     }
 
     /* A plain breakpoint */
-    else if (line != NULL && (record->lnum = atoi(line)) > 0
+    else if (line != NULL && (record->lnum = atoi((char *)line)) > 0
 	    && source != NULL)
     {
 	bp_file = obstack_strsave(obs, source);
@@ -4067,7 +4067,7 @@ parse_note(this, str)
 		    && (*(note + len) == NUL || isspace(*(note + len))))
 	    {
 		this->note = pt->id;
-		return note + strlen(pt->str);
+		return note + strlen((char *)pt->str);
 	    }
 	}
     }

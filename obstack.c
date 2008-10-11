@@ -19,18 +19,18 @@
    Boston, MA 02110-1301, USA.  */
 
 
-#ifdef HAVE_CONFIG_H
-# ifdef HAVE_CLEWN
-#  include <config.h>
-# else
-#  include <auto/config.h>
-# endif
-#endif
-
 #ifdef _LIBC
 # include <obstack.h>
 # include <shlib-compat.h>
 #else
+# ifdef HAVE_CONFIG_H
+#  ifdef HAVE_CLEWN
+#   include <config.h>
+#  else
+#   include <auto/config.h>
+#  endif
+# endif
+# include <stdint.h>
 # include "obstack.h"
 #endif
 

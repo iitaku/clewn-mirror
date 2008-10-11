@@ -17,7 +17,7 @@
  * Free Software Foundation, Inc.,
  * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  *
- * $Id: clewn.h 117 2007-01-22 13:41:12Z xavier $
+ * $Id: clewn.h 217 2008-10-11 14:29:18Z xavier $
  */
 
 #ifndef CLEWN_H
@@ -86,7 +86,7 @@
 # endif
 #endif
 
-typedef unsigned char	char_u;
+typedef char	char_u;
 typedef unsigned long	long_u;
 typedef long		linenr_T;	/* line number type */
 typedef unsigned	colnr_T;	/* column number type */
@@ -152,12 +152,12 @@ typedef unsigned	colnr_T;	/* column number type */
 /* the NetBeans event structure */
 typedef struct
 {
-    char_u *key;	/* allocated NetBeans key */
-    char_u *lnum;	/* allocated line number */
-    char_u *pathname;	/* allocated buffer name */
-    char_u *text;	/* allocated balloon text */
-    int text_event;	/* TRUE after receiving a balloonText netbeans event */
-    int seqno;		/* netbeans event or reply sequence number */
+    char *key;	    /* allocated NetBeans key */
+    char *lnum;	    /* allocated line number */
+    char *pathname; /* allocated buffer name */
+    char *text;	    /* allocated balloon text */
+    int text_event; /* TRUE after receiving a balloonText netbeans event */
+    int seqno;	    /* netbeans event or reply sequence number */
 } nb_event_T;
 
 extern int p_asm;		    /* assembly support when non zero */
@@ -172,14 +172,14 @@ typedef struct
 } gdb_handle_T;
 
 /* gdb interface */
-void gdb_docmd __ARGS((gdb_handle_T *, char_u *));
-void gdb_setwinput __ARGS((gdb_handle_T *, char_u *));
+void gdb_docmd __ARGS((gdb_handle_T *, char *));
+void gdb_setwinput __ARGS((gdb_handle_T *, char *));
 int gdb_iswinput __ARGS((gdb_handle_T *));
 void gdb_free_records __ARGS((int));
 
 /* NetBeans interface */
 #define IS_NETBEANS_CONNECTED (cnb_get_connsock() >= 0 || cnb_get_datasock() >= 0)
-int cnb_open __ARGS((char_u *, int *, int, int, char *));
+int cnb_open __ARGS((char *, int *, int, int, char *));
 void cnb_close __ARGS((void));
 void cnb_saveAndExit __ARGS((void));
 int cnb_state __ARGS((void));
@@ -187,39 +187,39 @@ int cnb_specialKeys __ARGS((void));
 void cnb_keymap __ARGS((int, int));
 
 int cnb_get_connsock __ARGS((void));
-void cnb_create_varbuf __ARGS((char_u *));
+void cnb_create_varbuf __ARGS((char *));
 void cnb_set_instance __ARGS((int));
 int cnb_get_datasock __ARGS((void));
 void cnb_conn_evt __ARGS((void));
 nb_event_T * cnb_data_evt __ARGS((void));
-void cnb_send_debug __ARGS((int, char_u *));
-void cnb_showBalloon __ARGS((char_u *, int, struct obstack *));
+void cnb_send_debug __ARGS((int, char *));
+void cnb_showBalloon __ARGS((char *, int, struct obstack *));
 void cnb_startAtomic __ARGS((int));
 void cnb_endAtomic __ARGS((int));
-int cnb_editFile __ARGS((char_u *, linenr_T, char_u *, char_u *, char_u *, int, struct obstack *));
+int cnb_editFile __ARGS((char *, linenr_T, char *, char *, char *, int, struct obstack *));
 int cnb_define_sign __ARGS((int, int, int, struct obstack *));
 void cnb_buf_addsign __ARGS((int, int, int, linenr_T, struct obstack *));
 int cnb_buf_getsign __ARGS((int, int));
 void cnb_buf_delsign __ARGS((int, int));
-int cnb_create_buf __ARGS((char_u *));
+int cnb_create_buf __ARGS((char *));
 void cnb_kill __ARGS((int));
 void cnb_set_asm __ARGS((int));
 void cnb_unlink_asm __ARGS((void));
-char_u * cnb_filename __ARGS((int));
-int cnb_lookup_buf __ARGS((char_u *));
+char * cnb_filename __ARGS((int));
+int cnb_lookup_buf __ARGS((char *));
 int cnb_isvalid_buffer __ARGS((int));
 int cnb_outofbounds __ARGS((int));
-void cnb_append __ARGS((int, char_u *, struct obstack *));
+void cnb_append __ARGS((int, char *, struct obstack *));
 void cnb_clear __ARGS((int, struct obstack *));
-void cnb_replace __ARGS((int, char_u *, int, struct obstack *));
-char_u * cnb_search_obj __ARGS((char_u *, int *));
+void cnb_replace __ARGS((int, char *, int, struct obstack *));
+char * cnb_search_obj __ARGS((char *, int *));
 
 /* Utilities */
-void EMSG __ARGS((char_u *));
+void EMSG __ARGS((char *));
 linenr_T find_fr_sign __ARGS((int));
-FILE * clewn_opentmpfile __ARGS((char_u *, char_u **, int));
-char_u * clewn_stripwhite __ARGS((char_u *));
-linenr_T searchfor __ARGS((char_u *, char_u *));
+FILE * clewn_opentmpfile __ARGS((char *, char **, int));
+char * clewn_stripwhite __ARGS((char *));
+linenr_T searchfor __ARGS((char *, char *));
 
 #endif	/* CLEWN_H */
 

@@ -17,7 +17,7 @@
  * Free Software Foundation, Inc.,
  * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  *
- * $Id: netbeans.c 148 2007-07-21 16:35:40Z xavier $
+ * $Id: netbeans.c 217 2008-10-11 14:29:18Z xavier $
  */
 
 #include <config.h>
@@ -87,7 +87,7 @@ typedef struct cnbl_struct cnbl_T;
 /* The Netbeans buffer structure */
 typedef struct
 {
-    char_u *name;	/* buffer file name */
+    char *name;		/* buffer file name */
     int state;		/* buffer state */
     cnbl_T *txt;	/* buffer content: a list of cnbl_T lines */
     int lastsign;	/* last sign type number */
@@ -96,15 +96,15 @@ typedef struct
 /* The line structure */
 struct cnbl_struct
 {
-    char_u *line;	/* the line */
+    char *line;		/* the line */
     int len;		/* line length */
     cnbl_T *next;	/* next line */
 };
 
 typedef struct
 {
-    char_u * gdb_path;
-    char_u * vim_path;
+    char * gdb_path;
+    char * vim_path;
 } pathmap_T;
 
 /* NetBeans states */
@@ -123,14 +123,14 @@ typedef struct
 {
     int instance;	/* gdb instance number */
     int state;		/* NetBeans state */
-    char_u *passwd;	/* non allocated NetBeans password */
+    char *passwd;	/* non allocated NetBeans password */
     int debug;		/* TRUE debugging info enabled */
     pathmap_T * remote_map; /* array of path mappings, when remote debugging */
     int fdcon;		/* socket over which the connection is accepted */
     int fdata;		/* socket over which NetBeans messages are exchanged */
     int seqno;		/* current command or function sequence number */
     int lastbuf;	/* last buffer number (buffer numbers start at 1) */
-    char_u *line;	/* partial line received from NetBeans */
+    char *line;		/* partial line received from NetBeans */
     cnbuf_T *cnbuf;	/* buffer list */
     int cnbuf_size;	/* buffer list current size */
     int fr_buf;		/* frame sign buffer number */
@@ -149,21 +149,21 @@ static nb_event_T cnb_event;	    /* netbeans event */
 static char cnb_buf[MAXMSGSIZE];    /* buffer for reading NetBeans messages */
 
 /* Forward declarations */
-static int parse_msg __ARGS((char_u *, struct obstack *));
-static int conn_setup __ARGS((char_u *, struct obstack *));
-static int get_evt __ARGS((char_u *, int *, char_u **));
-static void send_cmd __ARGS((int, char_u *, char_u *));
-static void send_function __ARGS((int, char_u *, char_u *));
+static int parse_msg __ARGS((char *, struct obstack *));
+static int conn_setup __ARGS((char *, struct obstack *));
+static int get_evt __ARGS((char *, int *, char **));
+static void send_cmd __ARGS((int, char *, char *));
+static void send_function __ARGS((int, char *, char *));
 static pathmap_T * pm_parse __ARGS((char *));
-static char_u * pm_mapto_vim __ARGS((char_u *, char_u *, char_u *, char_u *, struct obstack *));
-static char_u * pm_mapto_gdb __ARGS((char_u *, struct obstack *));
-static char_u * unquote __ARGS((char_u *, char_u **, struct obstack *));
-static char_u * quote __ARGS((char_u *, struct obstack *));
+static char * pm_mapto_vim __ARGS((char *, char *, char *, char *, struct obstack *));
+static char * pm_mapto_gdb __ARGS((char *, struct obstack *));
+static char * unquote __ARGS((char *, char **, struct obstack *));
+static char * quote __ARGS((char *, struct obstack *));
 static cnbuf_T * lowlevel_buf __ARGS((int));
 static cnbuf_T * getbuf __ARGS((int));
 static int edit_file __ARGS((int, struct obstack *));
 static cnbl_T ** line_get __ARGS((int, int, int *));
-static void line_insert __ARGS((int, int, char_u *));
+static void line_insert __ARGS((int, int, char *));
 static void line_remove __ARGS((int, int, int));
 static void line_debug __ARGS((int));
 
@@ -175,7 +175,7 @@ static void line_debug __ARGS((int));
  */
     int
 cnb_open(arg, pvar_buf, debug, reuse_addr, pathnames_map)
-    char_u *arg;	/* netbeans connection parameters */
+    char *arg;		/* netbeans connection parameters */
     int *pvar_buf;	/* pointer to buffer number of variables file name */
     int debug;		/* TRUE when debug mode */
     int reuse_addr;	/* TRUE when socket option SO_REUSEADDR */
@@ -424,7 +424,7 @@ cnb_keymap(type, key)
 /* Create or empty the variables buffer */
     void
 cnb_create_varbuf(var_name)
-    char_u *var_name;	/* variables file name */
+    char *var_name;	/* variables file name */
 {
     struct obstack obs;	/* use an obstack for temporary allocated memory */
     cnbuf_T *buf;
@@ -480,13 +480,13 @@ cnb_conn_evt()
     struct sockaddr_in from;
     char *remote;
     int port;
-    int fromlen;
+    socklen_t fromlen;
     int s;
 
     if (cnb == NULL || cnb->fdcon == -1)
 	return;
 
-    fromlen = sizeof(from);
+    fromlen = (socklen_t) sizeof(from);
 
     /* accept the connection */
     if ((s = accept(cnb->fdcon, (struct sockaddr *)&from, &fromlen)) != -1)
@@ -521,9 +521,9 @@ cnb_conn_evt()
 cnb_data_evt()
 {
     struct obstack obs;	/* use an obstack for temporary allocated memory */
-    char_u *evt;
-    char_u *start;
-    char_u *end;
+    char *evt;
+    char *start;
+    char *end;
     int len;
 
     if (cnb == NULL || cnb->fdata == -1)
@@ -556,12 +556,12 @@ cnb_data_evt()
 	/* add to previous partial line */
 	obstack_strcat(&obs, cnb->line);
 	obstack_strcat0(&obs, cnb_buf);
-	evt = (char_u *)obstack_finish(&obs);
+	evt = (char *)obstack_finish(&obs);
 
 	/* handle multiple NetBeans messages */
 	for (start = evt; *start; start = end)
 	{
-	    if ((end = STRCHR(start, (int)'\n')) != NULL)
+	    if ((end = strchr(start, (int)'\n')) != NULL)
 	    {
 		*end++ = NUL;
 		if (parse_msg(start, &obs) == FAIL)
@@ -579,7 +579,7 @@ cnb_data_evt()
 	if (*start != NUL)	    /* a partial line */
 	{
 	    xfree(cnb->line);
-	    cnb->line = (char_u *)clewn_strsave(start);
+	    cnb->line = clewn_strsave(start);
 	    obstack_free(&obs, NULL);
 
 	    return &cnb_event;
@@ -598,13 +598,13 @@ cnb_data_evt()
  */
     static int
 parse_msg(event, obs)
-    char_u *event;
+    char *event;
     struct obstack *obs;
 {
     cnbuf_T *buf;
-    char_u *args;
-    char_u *pathname;
-    char_u *next;
+    char *args;
+    char *pathname;
+    char *next;
     char *end;
     char *tmp;
     int bufno;
@@ -616,7 +616,7 @@ parse_msg(event, obs)
 
     /* NetBeans ready and running */
     cnb_event.seqno = (int)strtol(event, &tmp, 10);
-    next = (char_u *)tmp;
+    next = tmp;
 
     /*
      * A reply to a function.
@@ -627,7 +627,7 @@ parse_msg(event, obs)
 	    next++;
 	FREE(cnb_event.text);
 	cnb_event.text_event = FALSE;
-	cnb_event.text = (char_u *)clewn_strsave(next);
+	cnb_event.text = clewn_strsave(next);
 
 	/* handle acknowledgements for var_buf */
 	if ((buf = getbuf(*cnb->pvar_buf)) != NULL && cnb_event.seqno != 0
@@ -668,7 +668,7 @@ parse_msg(event, obs)
 		FREE(cnb_event.text);
 
 		if (*next == ' ' && *(next + 1) == 'T'
-			&& STRCMP(pathname, "(null)") != 0)
+			&& strcmp(pathname, "(null)") != 0)
 		{
 		    *next = NUL;    /* terminate quoted pathname */
 
@@ -684,8 +684,8 @@ parse_msg(event, obs)
 			send_cmd(bufno, "putBufferNumber", args);
 
 			/* learn about var_buf when it is created remotely */
-			if (*cnb->pvar_buf == -1 && (tmp=STRSTR(pathname, VARIABLES_FNAME)) != NULL
-				&& STRCMP(tmp, VARIABLES_FNAME) == 0)
+			if (*cnb->pvar_buf == -1 && (tmp=strstr(pathname, VARIABLES_FNAME)) != NULL
+				&& strcmp(tmp, VARIABLES_FNAME) == 0)
 			    *cnb->pvar_buf = bufno;
 
 			/* keep listening on changes to var_buf */
@@ -723,7 +723,7 @@ parse_msg(event, obs)
 		    fprintf(stderr, "parse error in EVT_BALLOONTEXT in parse_msg()\n");
 	    }
 	    else {
-		cnb_event.text = (char_u *)clewn_strsave(args);
+		cnb_event.text = clewn_strsave(args);
 		cnb_event.text_event = TRUE;
 	    }
 	    break;
@@ -738,11 +738,11 @@ parse_msg(event, obs)
 	    FREE(cnb_event.key);
 	    if ((args = unquote(args, &next, obs)) != NULL)
 	    {
-		cnb_event.key = (char_u *)clewn_strsave(args);
+		cnb_event.key = clewn_strsave(args);
 		
 		/* skip offset and parse line number */
-		if (*next++ == ' ' && (next = STRCHR(next, ' ')) != NULL
-			&& (end = STRCHR(++next, '/')) != NULL)
+		if (*next++ == ' ' && (next = strchr(next, ' ')) != NULL
+			&& (end = strchr(++next, '/')) != NULL)
 		{
 		    *end = NUL;
 
@@ -750,7 +750,7 @@ parse_msg(event, obs)
 		    if ((buf = getbuf(bufno)) != NULL)
 		    {
 			xfree(cnb_event.lnum);
-			cnb_event.lnum = (char_u *)clewn_strsave(next);
+			cnb_event.lnum = clewn_strsave(next);
 
 			if (cnb->debug)
 			    fprintf(stderr, "vim source file name: \"%s\"\n", buf->name);
@@ -787,7 +787,7 @@ parse_msg(event, obs)
 	/* Text "next" has been inserted in Vim at position "offset" */
 	case EVT_INSERT:
 	    offset = (int)strtol(args, &tmp, 10);
-	    next = (char_u *)tmp;
+	    next = tmp;
 
 	    if (next != args && *next++ == ' ' && *next == '"'
 		    && (next = unquote(next, NULL, obs)) != NULL)
@@ -806,7 +806,7 @@ parse_msg(event, obs)
 	/* Text was deleted in Vim at position "offset" with byte length "len" */
 	case EVT_REMOVE:
 	    offset = (int)strtol(args, &tmp, 10);
-	    next = (char_u *)tmp;
+	    next = tmp;
 
 	    if (next != args && *next++ == ' ')
 	    {
@@ -848,17 +848,17 @@ parse_msg(event, obs)
  */
     static int
 conn_setup(event, obs)
-    char_u *event;
+    char *event;
     struct obstack *obs;
 {
-    char_u *args;
-    char_u *version;
+    char *args;
+    char *version;
     int bufno;
 
     /* password: no quotes are used! */
-    if (STRSTR(event, AUTH_MSG) == event)
+    if (strstr(event, AUTH_MSG) == event)
     {
-	if (STRCMP(event + STRLEN(AUTH_MSG), cnb->passwd) == 0)
+	if (strcmp(event + strlen(AUTH_MSG), cnb->passwd) == 0)
 	    cnb->state |= NBS_AUTH;
 	else
 	{
@@ -875,14 +875,14 @@ conn_setup(event, obs)
 	    if ((args = unquote(args, NULL, obs)) != NULL)
 	    {
 		version = clewn_stripwhite(args);
-		if (STRCMP(version, NETBEANS_REQSTED_VERSION) >= 0)
+		if (strcmp(version, NETBEANS_REQSTED_VERSION) >= 0)
 		{
 		    cnb->state |= NBS_VERSION;
-		    if (STRCMP(version, NETBEANS_SPECIALKEYS_VERSION) >= 0)
+		    if (strcmp(version, NETBEANS_SPECIALKEYS_VERSION) >= 0)
 			cnb->state |= NBS_SPECIALKEYS;
-		    if (STRCMP(version, NETBEANS_GETANNO_VERSION) >= 0)
+		    if (strcmp(version, NETBEANS_GETANNO_VERSION) >= 0)
 			cnb->state |= NBS_GETANNO;
-		    if (STRCMP(version, NETBEANS_CLOSE_BUGFIXED_VERSION) >= 0)
+		    if (strcmp(version, NETBEANS_CLOSE_BUGFIXED_VERSION) >= 0)
 			cnb->state |= NBS_CLOSE_FIX;
 
 		    return OK;
@@ -924,21 +924,21 @@ conn_setup(event, obs)
  */
     static int
 get_evt(event, pbuf, parg)
-    char_u *event;	/* event to parse */
+    char *event;	/* event to parse */
     int *pbuf;		/* pointer to a bufID */
-    char_u **parg;	/* pointer to event arguments */
+    char **parg;	/* pointer to event arguments */
 {
     int id = EVT_ERROR;	/* event id */
-    char_u *name;	/* event name */
-    char_u *ptr;
+    char *name;		/* event name */
+    char *ptr;
     char *tmp;
     int seqno;
 
-    if (event != NULL && (name = STRCHR(event, ':')) != NULL)
+    if (event != NULL && (name = strchr(event, ':')) != NULL)
     {
 	*name++ = NUL;
 	*pbuf = (int)strtol(event, &tmp, 10);
-	ptr = (char_u *)tmp;
+	ptr = tmp;
 
 	/* check bufID validity */
 	if (*ptr != NUL || *pbuf < 0 || *pbuf > cnb->lastbuf)
@@ -948,7 +948,7 @@ get_evt(event, pbuf, parg)
 	    return EVT_ERROR;
 	}
 
-	if ((ptr = STRCHR(name, '=')) != NULL)
+	if ((ptr = strchr(name, '=')) != NULL)
 	{
 	    *ptr++ = NUL;
 	    seqno = atoi(ptr);
@@ -961,38 +961,38 @@ get_evt(event, pbuf, parg)
 	    }
 
 	    /* strip <SPACE> at arguments start */
-	    if ((*parg = STRCHR(ptr, ' ')) != NULL)
+	    if ((*parg = strchr(ptr, ' ')) != NULL)
 		while (**parg == ' ')
 		    (*parg)++;
 
 	    /* get event id */
-	    if (STRCMP(name, "balloonText") == 0)
+	    if (strcmp(name, "balloonText") == 0)
 		id = EVT_BALLOONTEXT;
-	    else if (STRCMP(name, "fileOpened") == 0)
+	    else if (strcmp(name, "fileOpened") == 0)
 		id = EVT_FILEOPENED;
-	    else if (STRCMP(name, "balloonEval") == 0)
+	    else if (strcmp(name, "balloonEval") == 0)
 		id = EVT_BALLOONEVAL;
-	    else if (STRCMP(name, "geometry") == 0)
+	    else if (strcmp(name, "geometry") == 0)
 		id = EVT_GEOMETRY;
-	    else if (STRCMP(name, "insert") == 0)
+	    else if (strcmp(name, "insert") == 0)
 		id = EVT_INSERT;
-	    else if (STRCMP(name, "keyCommand") == 0)
+	    else if (strcmp(name, "keyCommand") == 0)
 		id = EVT_KEYCOMMAND;
-	    else if (STRCMP(name, "keyAtPos") == 0)
+	    else if (strcmp(name, "keyAtPos") == 0)
 		id = EVT_KEYATPOS;
-	    else if (STRCMP(name, "killed") == 0)
+	    else if (strcmp(name, "killed") == 0)
 		id = EVT_KILLED;
-	    else if (STRCMP(name, "newDotAndMark") == 0)
+	    else if (strcmp(name, "newDotAndMark") == 0)
 		id = EVT_NEWDOTANDMARK;
-	    else if (STRCMP(name, "remove") == 0)
+	    else if (strcmp(name, "remove") == 0)
 		id = EVT_REMOVE;
-	    else if (STRCMP(name, "save") == 0)
+	    else if (strcmp(name, "save") == 0)
 		id = EVT_SAVE;
-	    else if (STRCMP(name, "startupDone") == 0)
+	    else if (strcmp(name, "startupDone") == 0)
 		id = EVT_STARTUPDONE;
-	    else if (STRCMP(name, "unmodified") == 0)
+	    else if (strcmp(name, "unmodified") == 0)
 		id = EVT_UNMODIFIED;
-	    else if (STRCMP(name, "version") == 0)
+	    else if (strcmp(name, "version") == 0)
 		id = EVT_VERSION;
 	    else
 	    {
@@ -1010,9 +1010,9 @@ get_evt(event, pbuf, parg)
  */
     static void
 send_cmd(bufno, cmd, arg)
-    int bufno;		/* buffer id, generic messages use a bufID of zero */
-    char_u *cmd;	/* command */
-    char_u *arg;	/* command arguments, may be NULL */
+    int bufno;	/* buffer id, generic messages use a bufID of zero */
+    char *cmd;	/* command */
+    char *arg;	/* command arguments, may be NULL */
 {
     if (cnb == NULL || cnb->fdata == -1 || ! (cnb->state & NBS_READY)
 	    || cmd == NULL || *cmd == NUL)
@@ -1020,7 +1020,7 @@ send_cmd(bufno, cmd, arg)
 
     /* can't use allocated memory here as we may be called to "removeAnno"
      * when aborting after memory allocation failure */
-    if (2 * NUMBUFLEN + STRLEN(cmd) + (arg != NULL ? (STRLEN(arg) + 1) : 0) + 3 + 1
+    if (2 * NUMBUFLEN + strlen(cmd) + (arg != NULL ? (strlen(arg) + 1) : 0) + 3 + 1
 	    > MAXMSGSIZE)
 	return;
 
@@ -1031,7 +1031,7 @@ send_cmd(bufno, cmd, arg)
     if (cnb->debug)
 	fprintf(stderr, cnb_buf);
 
-    (void)write(cnb->fdata, cnb_buf, STRLEN(cnb_buf));
+    (void)write(cnb->fdata, cnb_buf, strlen(cnb_buf));
 }
 
 /*
@@ -1040,15 +1040,15 @@ send_cmd(bufno, cmd, arg)
  */
     static void
 send_function(bufno, function, arg)
-    int bufno;		/* buffer id, generic messages use a bufID of zero */
-    char_u *function;	/* function */
-    char_u *arg;	/* command arguments, may be NULL */
+    int bufno;	    /* buffer id, generic messages use a bufID of zero */
+    char *function; /* function */
+    char *arg;	    /* command arguments, may be NULL */
 {
     if (cnb == NULL || cnb->fdata == -1 || ! (cnb->state & NBS_READY)
 	    || function == NULL || *function == NUL)
 	return;
 
-    if (2 * NUMBUFLEN + STRLEN(function) + (arg != NULL ? (STRLEN(arg) + 1) : 0) + 3 + 1
+    if (2 * NUMBUFLEN + strlen(function) + (arg != NULL ? (strlen(arg) + 1) : 0) + 3 + 1
 	    > MAXMSGSIZE)
 	return;
 
@@ -1059,7 +1059,7 @@ send_function(bufno, function, arg)
     if (cnb->debug)
 	fprintf(stderr, cnb_buf);
 
-    (void)write(cnb->fdata, cnb_buf, STRLEN(cnb_buf));
+    (void)write(cnb->fdata, cnb_buf, strlen(cnb_buf));
 
     /* handle acknowledgements for var_buf */
     if (bufno == *cnb->pvar_buf)
@@ -1078,10 +1078,10 @@ send_function(bufno, function, arg)
     void
 cnb_send_debug(type, line)
     int type;
-    char_u *line;
+    char *line;
 {
-    char_u *token;
-    char_u *args;
+    char *token;
+    char *args;
     char *tmp;
     int bufno;
 
@@ -1089,7 +1089,7 @@ cnb_send_debug(type, line)
 	return;
 
     bufno = (int)strtol(line, &tmp, 10);
-    token = (char_u *)tmp;
+    token = tmp;
 
     if ((bufno != 0 && getbuf(bufno) == NULL) || *token != ' ')
     {
@@ -1106,7 +1106,7 @@ cnb_send_debug(type, line)
 	return;
     }
 
-    args = STRCHR(token, ' ');
+    args = strchr(token, ' ');
     if (args != NULL)
     {
 	*args++ = NUL;
@@ -1126,19 +1126,19 @@ cnb_send_debug(type, line)
 /* Show a balloon (popup window) at the mouse pointer position, containing "text". */
     void
 cnb_showBalloon(text, doquote, obs)
-    char_u *text;
+    char *text;
     struct obstack *obs;
     int doquote;
 {
-    char_u *quoted = NULL;
-    char_u *wk_copy;
+    char *quoted = NULL;
+    char *wk_copy;
 
     if (text != NULL)
     {
 	wk_copy = obstack_strsave(obs, text);
 
-	if (STRLEN(wk_copy) > MAX_BALLOON_SIZE)
-	    STRCPY(wk_copy + MAX_BALLOON_SIZE - 3, "...");
+	if (strlen(wk_copy) > MAX_BALLOON_SIZE)
+	    strcpy(wk_copy + MAX_BALLOON_SIZE - 3, "...");
 
 	if (doquote)
 	    quoted = quote(wk_copy, obs);
@@ -1166,19 +1166,19 @@ cnb_endAtomic(bufno) int bufno; { send_cmd(bufno, "endAtomic", NULL); }
  */
     int
 cnb_editFile(name, lnum, sourcedir, source_cur, source_list, silent, obs)
-    char_u *name;	/* file name */
+    char *name;		/* file name */
     linenr_T lnum;	/* line number */
-    char_u *sourcedir;	/* GDB source directories */
-    char_u *source_cur;	/* GDB current source */
-    char_u *source_list;/* GDB source list */
+    char *sourcedir;	/* GDB source directories */
+    char *source_cur;	/* GDB current source */
+    char *source_list;	/* GDB source list */
     int silent;
     struct obstack *obs;
 {
     int bufno = -1;
-    char_u *pathname;	/* file full path name */
+    char *pathname;	/* file full path name */
     cnbuf_T *buf;
-    char_u *str;
-    char_u *quoted;
+    char *str;
+    char *quoted;
 
     if (cnb == NULL || ! (cnb->state & NBS_READY))
 	return -1;
@@ -1199,7 +1199,7 @@ cnb_editFile(name, lnum, sourcedir, source_cur, source_list, silent, obs)
 
     if (pathname == NULL)
     {
-	if (! silent && STRLEN(name) < MAXMSGSIZE - 100)
+	if (! silent && strlen(name) < MAXMSGSIZE - 100)
 	{
 	    sprintf(cnb_buf,
 		    "Clewn cannot find file \"%s\" in GDB source directories\n", name);
@@ -1265,13 +1265,13 @@ cnb_define_sign(bufno, id, type, obs)
     int type;	    /* sign type (frame or enabled/disabled bp) */
     struct obstack *obs;
 {
-    char_u *prefix   = NULL;	/* keep compiler happy */
-    char_u *typeName;		/* sign name (Vim use it to build the hilite group) */
-    char_u *glyphFile;		/* 2 characters text */
+    char *prefix   = NULL;	/* keep compiler happy */
+    char *typeName;		/* sign name (Vim use it to build the hilite group) */
+    char *glyphFile;		/* 2 characters text */
     int fg = 0;			/* foreground color: black */
     int bg = 0;			/* background color; set to 0 to keep compiler happy */
-    char_u text[NUMBUFLEN];
-    char_u *arg;
+    char text[NUMBUFLEN];
+    char *arg;
     cnbuf_T *buf;
     int r;
     int typenr;
@@ -1300,26 +1300,26 @@ cnb_define_sign(bufno, id, type, obs)
 	 *  x is the gdb instance number
 	 *  nnn is the breakpoint number */
 	obstack_strcat(obs, prefix);
-	STRCPY(text, gdb_itoa(cnb->instance));
+	strcpy(text, gdb_itoa(cnb->instance));
 	obstack_strcat(obs, text);
 	obstack_strcat(obs, "_");
 
-	STRCPY(text, gdb_itoa(id));
+	strcpy(text, gdb_itoa(id));
 	obstack_strcat0(obs, text);
-	typeName = (char_u *)obstack_finish(obs);
+	typeName = (char *)obstack_finish(obs);
 
 	/* the sign text is two chars max */
 	if (id < 100)
-	    STRCPY(text, gdb_itoa(id));
+	    strcpy(text, gdb_itoa(id));
 	else
 	{
 	    if ((r = id % 100) < 10)
 	    {
 		text[0] = '0';
-		STRCPY(text + 1, gdb_itoa(r));
+		strcpy(text + 1, gdb_itoa(r));
 	    }
 	    else
-		STRCPY(text, gdb_itoa(r));
+		strcpy(text, gdb_itoa(r));
 	}
 	glyphFile = text;
     }
@@ -1377,7 +1377,7 @@ cnb_buf_addsign(bufno, id, typenr, lnum, obs)
     linenr_T lnum;  /* line number */
     struct obstack *obs;
 {
-    char_u *arg;
+    char *arg;
 
     if (cnb == NULL || ! (cnb->state & NBS_READY))
 	return;
@@ -1413,7 +1413,7 @@ cnb_buf_getsign(bufno, id)
     int id;	    /* sign id (1:frame or BP_SIGN_ID(bp_id)) */
 {
     int wtime = GETANNO_TIMEOUT;    /* msecs */
-    char_u arg[NUMBUFLEN];
+    char arg[NUMBUFLEN];
     int lnum;
     int seqno;
     int rc;
@@ -1488,7 +1488,7 @@ cnb_buf_delsign(bufno, id)
     int bufno;	    /* buffer number */
     int id;	    /* sign id (1:frame or BP_SIGN_ID(bp_id)) */
 {
-    char_u arg[NUMBUFLEN];
+    char arg[NUMBUFLEN];
 
     if (cnb == NULL || ! (cnb->state & NBS_READY))
 	return;
@@ -1517,10 +1517,10 @@ pm_parse(pathnames_map)
 {
     pathmap_T * pathmap;
     pathmap_T * m;
-    char_u * map_list;
-    char_u * ptr;
-    char_u * end;
-    char_u * map;
+    char * map_list;
+    char * ptr;
+    char * end;
+    char * map;
     int count;
 
     if (pathnames_map == NULL)
@@ -1536,21 +1536,21 @@ pm_parse(pathnames_map)
 	return NULL;
 
     /* make a copy so we can mess with it */
-    map_list = (char_u *)clewn_strsave(pathnames_map);
+    map_list = clewn_strsave(pathnames_map);
 
     /* build the array */
     for (m=pathmap, ptr=map_list; ; m++) {
 	map = end = NULL;
-	if ((end=STRCHR(ptr, PATHMAP_MAP_SEPARATOR)) != NULL)
+	if ((end=strchr(ptr, PATHMAP_MAP_SEPARATOR)) != NULL)
 	    *end = NUL;
-	if ((map=STRCHR(ptr, PATHMAP_PATH_SEPARATOR)) != NULL)
+	if ((map=strchr(ptr, PATHMAP_PATH_SEPARATOR)) != NULL)
 	    *map = NUL;
 
-	m->gdb_path = (char_u *)clewn_strsave(ptr);
+	m->gdb_path = clewn_strsave(ptr);
 	if (map != NULL)
-	    m->vim_path = (char_u *)clewn_strsave(map + 1);
+	    m->vim_path = clewn_strsave(map + 1);
 	else
-	    m->vim_path = (char_u *)clewn_strsave("");
+	    m->vim_path = clewn_strsave("");
 
 	if (end == NULL)
 	    break;
@@ -1565,21 +1565,21 @@ pm_parse(pathnames_map)
  * For each mapping in the remote_map array, if gdb_path is a prefix
  * or is the empty string, then replace it with vim_path
  */
-    static char_u *
+    static char *
 pm_mapto_vim(name, sourcedir, source_cur, source_list, obs)
-    char_u *name;	/* file name */
-    char_u *sourcedir;	/* GDB source directories */
-    char_u *source_cur;	/* GDB current source */
-    char_u *source_list;/* GDB source list */
+    char *name;		/* file name */
+    char *sourcedir;	/* GDB source directories */
+    char *source_cur;	/* GDB current source */
+    char *source_list;	/* GDB source list */
     struct obstack *obs;
 {
-    char_u *pathname = name;
-    char_u *ptr = sourcedir;
+    char *pathname = name;
+    char *ptr = sourcedir;
     pathmap_T * m;
-    char_u *next;
-    char_u *hay;
-    char_u *found;
-    char_u *end;
+    char *next;
+    char *hay;
+    char *found;
+    char *end;
 
     /* first, get the full path name from gdb when the gdb variable 'directories'
      * contains the compilation directory "$cdir" */
@@ -1587,31 +1587,31 @@ pm_mapto_vim(name, sourcedir, source_cur, source_list, obs)
 	if (sourcedir == NULL)
 	    break;
 
-	if ((next = STRCHR(ptr, ':')) != NULL)
+	if ((next = strchr(ptr, ':')) != NULL)
 	    *next++ = NUL;
 
 	/* compilation directory */
-	if (STRCMP(ptr, GDB_CDIR) == 0) {
+	if (strcmp(ptr, GDB_CDIR) == 0) {
 	    /* hay: file="NAME",fullname=" */
 	    obstack_strcat(obs, "file=\"");
 	    obstack_strcat(obs, name);
 	    obstack_strcat0(obs, "\",fullname=\"");
-	    hay = (char_u *)obstack_finish(obs);
+	    hay = (char *)obstack_finish(obs);
 
 	    /* name is the current sourcefile: use gdb compilation directory */
-	    if (source_cur != NULL && (found=STRSTR(source_cur, hay)) != NULL ){
-		found += STRLEN(hay);
-		if ((end=STRSTR(found, "\"")) != NULL) {
-		    pathname = (char_u *)obstack_copy0(obs, found, end - found);
+	    if (source_cur != NULL && (found=strstr(source_cur, hay)) != NULL ){
+		found += strlen(hay);
+		if ((end=strstr(found, "\"")) != NULL) {
+		    pathname = (char *)obstack_copy0(obs, found, end - found);
 		    break;
 		}
 	    }
 
 	    /* lookup for first occurence of name in source list */
-	    if (source_list != NULL && (found=STRSTR(source_list, hay)) != NULL ){
-		found += STRLEN(hay);
-		if ((end=STRSTR(found, "\"")) != NULL)
-		    pathname = (char_u *)obstack_copy0(obs, found, end - found);
+	    if (source_list != NULL && (found=strstr(source_list, hay)) != NULL ){
+		found += strlen(hay);
+		if ((end=strstr(found, "\"")) != NULL)
+		    pathname = (char *)obstack_copy0(obs, found, end - found);
 	    }
 
 	    break;
@@ -1623,13 +1623,13 @@ pm_mapto_vim(name, sourcedir, source_cur, source_list, obs)
 
     /* map the path name */
     for (m=cnb->remote_map; m != NULL && m->gdb_path != NULL; m++) {
-	if ((ptr=STRSTR(pathname, m->gdb_path)) == pathname
+	if ((ptr=strstr(pathname, m->gdb_path)) == pathname
 		|| ((ptr=pathname) && *(m->gdb_path) == NUL))
 	{
-	    ptr += STRLEN(m->gdb_path);
+	    ptr += strlen(m->gdb_path);
 	    obstack_strcat(obs, m->vim_path);
 	    obstack_strcat0(obs, ptr);
-	    return (char_u *)obstack_finish(obs);
+	    return (char *)obstack_finish(obs);
 	}
     }
 
@@ -1641,24 +1641,24 @@ pm_mapto_vim(name, sourcedir, source_cur, source_list, obs)
  * or is the empty string, then replace it with gdb_path
  * Return an allocated string
  */
-    static char_u *
+    static char *
 pm_mapto_gdb(name, obs)
-    char_u *name;	/* file name */
+    char *name;	/* file name */
     struct obstack *obs;
 {
     pathmap_T * m;
-    char_u *ptr;
+    char *ptr;
 
     for (m=cnb->remote_map; m != NULL && m->gdb_path != NULL; m++) {
-	if ((ptr=STRSTR(name, m->vim_path)) == name || ((ptr=name) && *(m->vim_path) == NUL)) {
-	    ptr += STRLEN(m->vim_path);
+	if ((ptr=strstr(name, m->vim_path)) == name || ((ptr=name) && *(m->vim_path) == NUL)) {
+	    ptr += strlen(m->vim_path);
 	    obstack_strcat(obs, m->gdb_path);
 	    obstack_strcat0(obs, ptr);
-	    return (char_u *)clewn_strsave(obstack_finish(obs));
+	    return clewn_strsave(obstack_finish(obs));
 	}
     }
 
-    return (char_u *)clewn_strsave(name);
+    return clewn_strsave(name);
 }
 
 /*
@@ -1667,10 +1667,10 @@ pm_mapto_gdb(name, obs)
  * is set to the first char after end of quoted string
  * Return an allocated string.
  */
-    static char_u *
+    static char *
 unquote(str, end, obs)
-    char_u *str;	/* quoted string */
-    char_u **end;	/* set to first char after end of quoted string */
+    char *str;	/* quoted string */
+    char **end;	/* set to first char after end of quoted string */
     struct obstack *obs;
 {
     if (str == NULL || *str != '"')
@@ -1687,7 +1687,7 @@ unquote(str, end, obs)
 		/* tag first char after end of quoted string */
 		if (end != NULL)
 		    *end = str + 1;
-		return (char_u *)obstack_finish(obs);
+		return (char *)obstack_finish(obs);
 
 	    case '\\':
 		/* remove escape char and illegal escape sequences */
@@ -1729,12 +1729,12 @@ unquote(str, end, obs)
  * characters inside the string.
  * Return an allocated string.
  */
-    static char_u *
+    static char *
 quote(str, obs)
-    char_u *str;
+    char *str;
     struct obstack *obs;
 {
-    char_u escaped;
+    char escaped;
 
     if (str != NULL)
     {
@@ -1771,7 +1771,7 @@ quote(str, obs)
 		obstack_1grow(obs, *str);
 	}
 	obstack_grow0(obs, "\"", 1);
-	return (char_u *)obstack_finish(obs);
+	return (char *)obstack_finish(obs);
     }
     return NULL;
 }
@@ -1836,7 +1836,7 @@ getbuf(bufno)
  */
     int
 cnb_create_buf(name)
-    char_u *name;		/* buffer name */
+    char *name;		/* buffer name */
 {
     cnbuf_T *buf;
     int bufno;
@@ -1861,7 +1861,7 @@ cnb_create_buf(name)
 	buf = cnb->cnbuf + j;
 
 	if (! (buf->state & BUFS_KILLED) && buf->name != NULL
-		&& STRCMP(buf->name, name) == 0)
+		&& strcmp(buf->name, name) == 0)
 	    return j + 1;
     }
 
@@ -1870,7 +1870,7 @@ cnb_create_buf(name)
     /* create a new buffer */
     if ((buf = lowlevel_buf(++bufno)) != NULL)
     {
-	buf->name = (char_u *)clewn_strsave(name);
+	buf->name = clewn_strsave(name);
 	cnb->lastbuf = bufno;
 	return cnb->lastbuf;
     }
@@ -1944,7 +1944,7 @@ cnb_unlink_asm()
  */
     int
 cnb_lookup_buf(name)
-    char_u *name;		/* buffer file path name */
+    char *name;			/* buffer file path name */
 {
     static int last_used = 0;	/* last index used */
     cnbuf_T *buf;
@@ -1967,7 +1967,7 @@ cnb_lookup_buf(name)
 	buf = cnb->cnbuf + i;
 
 	if (! (buf->state & BUFS_KILLED)
-		&& buf->name != NULL && STRCMP(buf->name , name) == 0)
+		&& buf->name != NULL && strcmp(buf->name , name) == 0)
 	{
 	    last_used = i;
 	    return i + 1;	/* buffer numbers start at 1 */
@@ -1977,7 +1977,7 @@ cnb_lookup_buf(name)
 }
 
 /* Return buffer file name */
-    char_u *
+    char *
 cnb_filename(bufno)
     int bufno;
 {
@@ -2021,16 +2021,16 @@ cnb_outofbounds(bufno)
  */
     void
 cnb_append(bufno, line, obs)
-    int bufno;	    /* buffer number */
-    char_u *line;   /* line to append */
+    int bufno;	/* buffer number */
+    char *line; /* line to append */
     struct obstack *obs;
 {
     int offset  = 0;
-    char_u *res;
+    char *res;
     cnbuf_T *buf;
     cnbl_T *l;
-    char_u *ptr;
-    char_u *quoted;
+    char *ptr;
+    char *quoted;
 
     if (line == NULL || edit_file(bufno, obs) != OK)
 	return;
@@ -2049,13 +2049,13 @@ cnb_append(bufno, line, obs)
 	return;
 
     /* strip any new line */
-    if ((ptr = STRCHR(line, '\n')) != NULL)
+    if ((ptr = strchr(line, '\n')) != NULL)
 	*ptr = NUL;
 
     /* add the terminating new line */
     obstack_strcat(obs, line);
     obstack_strcat0(obs, "\n");
-    res = (char_u *)obstack_finish(obs);
+    res = (char *)obstack_finish(obs);
 
     /* quote it */
     if ((quoted = quote(res, obs)) == NULL)
@@ -2075,7 +2075,7 @@ cnb_append(bufno, line, obs)
     sprintf(cnb_buf, "%d ", offset);
     obstack_strcat(obs, cnb_buf);
     obstack_strcat0(obs, quoted);
-    res = (char_u *)obstack_finish(obs);
+    res = (char *)obstack_finish(obs);
 
     /* insert line in linked list */
     if (l != NULL && l->len > 0)
@@ -2088,13 +2088,13 @@ cnb_append(bufno, line, obs)
 	else
 	{
 	    line_insert(bufno, offset, line);
-	    line_insert(bufno, offset + STRLEN(line), "\n");
+	    line_insert(bufno, offset + strlen(line), "\n");
 	}
     }
     else
     {
 	line_insert(bufno, offset, line);
-	line_insert(bufno, offset + STRLEN(line) + 1, "\n");
+	line_insert(bufno, offset + strlen(line) + 1, "\n");
     }
 
     /* restore state */
@@ -2115,7 +2115,7 @@ cnb_clear(bufno, obs)
     struct obstack *obs;
 {
     int count = 0;
-    char_u *res;
+    char *res;
     cnbuf_T *buf;
     cnbl_T *l;
     cnbl_T *next;
@@ -2165,19 +2165,19 @@ cnb_clear(bufno, obs)
 /* Replace with line in bufno at line lnum. */
     void
 cnb_replace(bufno, line, lnum, obs)
-    int bufno;	    /* buffer number */
-    char_u *line;   /* line to append */
-    int lnum;	    /* line number */
+    int bufno;	/* buffer number */
+    char *line; /* line to append */
+    int lnum;	/* line number */
     struct obstack *obs;
 {
     int offset      = 0;
-    char_u *oldline;
-    char_u *twonl;
-    char_u *res;
+    char *oldline;
+    char *twonl;
+    char *res;
     cnbl_T *l;
-    char_u *quoted;
+    char *quoted;
     cnbuf_T *buf;
-    char_u *ptr;
+    char *ptr;
     int len;
 
     if (line == NULL || cnb == NULL || ! (cnb->state & NBS_READY))
@@ -2197,13 +2197,13 @@ cnb_replace(bufno, line, lnum, obs)
 	return;
 
     /* strip any new line */
-    if ((ptr = STRCHR(line, '\n')) != NULL)
+    if ((ptr = strchr(line, '\n')) != NULL)
 	*ptr = NUL;
 
     /* add two terminating new lines */
     obstack_strcat(obs, line);
     obstack_strcat0(obs, "\n\n");
-    res = (char_u *)obstack_finish(obs);
+    res = (char *)obstack_finish(obs);
 
     /* quote it */
     if ((quoted = quote(res, obs)) == NULL)
@@ -2231,12 +2231,12 @@ cnb_replace(bufno, line, lnum, obs)
     sprintf(cnb_buf, "%d ", offset);
     obstack_strcat(obs, cnb_buf);
     obstack_strcat0(obs, quoted);
-    res = (char_u *)obstack_finish(obs);
+    res = (char *)obstack_finish(obs);
 
     sprintf(cnb_buf, "%d %d", offset, len);
     oldline = obstack_strsave(obs, cnb_buf);
 
-    sprintf(cnb_buf, "%d 2", offset + STRLEN(line) + 1);
+    sprintf(cnb_buf, "%d 2", offset + strlen(line) + 1);
     twonl = obstack_strsave(obs, cnb_buf);
 
     /* replace line in linked list */
@@ -2278,15 +2278,15 @@ cnb_replace(bufno, line, lnum, obs)
  * in the buffer.
  * Return the (non allocated) object line or NULL when not found.
  */
-    char_u *
+    char *
 cnb_search_obj(object, plnum)
-    char_u *object;	/* object name to search for */
+    char *object;	/* object name to search for */
     int *plnum;		/* found at line number */
 {
     int lnum = 0;
     cnbuf_T *buf;
     cnbl_T *l;
-    char_u *ptr;
+    char *ptr;
 
     if (object == NULL || *object == NUL || cnb == NULL || ! (cnb->state & NBS_READY))
 	return NULL;
@@ -2305,7 +2305,7 @@ cnb_search_obj(object, plnum)
 	    while (isspace(*ptr))
 		ptr++;
 
-	    if (STRSTR(ptr, object) == ptr && *(ptr + STRLEN(object)) == ':')
+	    if (strstr(ptr, object) == ptr && *(ptr + strlen(object)) == ':')
 	    {
 		*plnum = lnum;
 		return l->line;	    /* found it */
@@ -2327,7 +2327,7 @@ edit_file(bufno, obs)
     struct obstack *obs;
 {
     cnbuf_T *buf;
-    char_u *quoted;
+    char *quoted;
 
     if (cnb == NULL || ! (cnb->state & NBS_READY))
 	return FAIL;
@@ -2392,14 +2392,14 @@ line_get(bufno, offset, pstart)
  */
     static void
 line_insert(bufno, offset, txt)
-    int bufno;	    /* buffer number */
-    int offset;	    /* where to insert */
-    char_u *txt;    /* text to insert, possibly a standalone '\n' */
+    int bufno;	/* buffer number */
+    int offset;	/* where to insert */
+    char *txt;  /* text to insert, possibly a standalone '\n' */
 {
     cnbl_T **pline;
     cnbl_T *l;
-    char_u *end;
-    char_u *p;
+    char *end;
+    char *p;
     int start;
     int len;
     int first;
@@ -2417,9 +2417,9 @@ line_insert(bufno, offset, txt)
     /*
      * Insert a new line
      */
-    if (STRCHR(txt, '\n') != NULL)
+    if (strchr(txt, '\n') != NULL)
     {
-	if (STRLEN(txt) != 1)
+	if (strlen(txt) != 1)
 	{
 	    if (cnb->debug)
 		fprintf(stderr, "error: a non standalone new line in line_insert()\n");
@@ -2439,7 +2439,7 @@ line_insert(bufno, offset, txt)
 	{
 	    l = *pline;	    /* assert l != NULL */
 
-	    l->len = (l->line != NULL ? STRLEN(l->line) : 0);
+	    l->len = (l->line != NULL ? strlen(l->line) : 0);
 	    if ((first = offset - start) <= 0 || first > l->len)
 	    {
 		if (cnb->debug)
@@ -2466,7 +2466,7 @@ line_insert(bufno, offset, txt)
 	    else /* assert (l->len - first) > 0 */
 	    {
 		/* remove (l->len - first) last characters */
-		end = (char_u *)clewn_strsave(l->line + first);
+		end = clewn_strsave(l->line + first);
 		line_remove(bufno, offset, (l->len - first));
 
 		/* insert a new line at end */
@@ -2492,12 +2492,12 @@ line_insert(bufno, offset, txt)
 	    *pline = l;
 	}
 
-	len = STRLEN(txt);
-	l->len = (l->line != NULL ? STRLEN(l->line) : 0);
+	len = strlen(txt);
+	l->len = (l->line != NULL ? strlen(l->line) : 0);
 
 	if (l->line == NULL)
 	{
-	    l->line = (char_u *)clewn_strsave(txt);
+	    l->line = clewn_strsave(txt);
 	    l->len = len;
 	}
 
@@ -2510,10 +2510,10 @@ line_insert(bufno, offset, txt)
 
 	else
 	{
-	    p = (char_u *)xmalloc(l->len + len + 1);
-	    STRNCPY(p, l->line, first);
-	    STRCPY(p + first, txt);
-	    STRCPY(p + first + len, l->line + first);
+	    p = (char *)xmalloc(l->len + len + 1);
+	    strncpy(p, l->line, first);
+	    strcpy(p + first, txt);
+	    strcpy(p + first + len, l->line + first);
 
 	    xfree(l->line);
 	    l->line = p;
@@ -2534,7 +2534,7 @@ line_remove(bufno, offset, nb)
 {
     cnbl_T **pline;
     cnbl_T *l;
-    char_u *p;
+    char *p;
     int start;
     int first;
     int last;
@@ -2556,7 +2556,7 @@ line_remove(bufno, offset, nb)
 	return;
     }
 
-    l->len = (l->line != NULL ? STRLEN(l->line) : 0);
+    l->len = (l->line != NULL ? strlen(l->line) : 0);
     if ((first = offset - start) < 0 || first > l->len)
     {
 	if (cnb->debug)
@@ -2595,9 +2595,9 @@ line_remove(bufno, offset, nb)
     }
     else
     {
-	p = (char_u *)xmalloc(first + last + 1);
-	STRNCPY(p, l->line, first);
-	STRCPY(p + first, l->line + first + nb);
+	p = (char *)xmalloc(first + last + 1);
+	strncpy(p, l->line, first);
+	strcpy(p + first, l->line + first + nb);
 
 	xfree(l->line);
 	l->line = p;

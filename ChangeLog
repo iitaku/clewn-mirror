@@ -1,5 +1,8 @@
 
-2008-03-29  Xavier de Gaye <xdegaye at users dot sourceforge dot net>
+2008-10-10  Xavier de Gaye <xdegaye at users dot sourceforge dot net>
+
+	* configure.ac netbeans.c clewn.c clewn.h misc.c gdb_lvl2.c
+	gdb_lvl3.c: suppress signedness warnings when built with gcc 4.1.2.
 
 	* obstack.c: exitfail.h and gettext.h are not needed and may not be
 	pesent on Cygwin platforms.

@@ -1,6 +1,6 @@
 # Process this file with autoconf to produce a configure script.
 AC_PREREQ(2.59)
-AC_INIT([clewn],[1.13.20],[xdegaye@users.sourceforge.net])
+AC_INIT([clewn],[1.13.21],[xdegaye@users.sourceforge.net])
 AC_CONFIG_SRCDIR([clewn.h])
 AC_CONFIG_HEADERS([config.h])
 
@@ -232,20 +232,6 @@ if test "$GCC" = yes; then
 		      [if test $enableval = no ; then
 			 CFLAGS=`echo $CFLAGS | sed 's/-O[[0-9]]//'`
 		       fi])
-
-    AC_MSG_CHECKING([if gcc supports -Wno-pointer-sign])
-
-    _gcc_cflags_save=$CFLAGS
-    CFLAGS="-Wno-pointer-sign"
-
-    AC_COMPILE_IFELSE(AC_LANG_PROGRAM([]),_gcc_psign=yes,_gcc_psign=no)
-    AC_MSG_RESULT($_gcc_psign)
-
-    CFLAGS=$_gcc_cflags_save;
-
-    if test x"$_gcc_psign" = xyes ; then
-       CFLAGS="$CFLAGS -Wno-pointer-sign"
-    fi
 fi
 
 AC_CONFIG_FILES([Makefile runtime/Makefile])
