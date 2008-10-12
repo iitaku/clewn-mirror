@@ -17,7 +17,7 @@
  * Free Software Foundation, Inc.,
  * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  *
- * $Id: gdb_lvl3.c 217 2008-10-11 14:29:18Z xavier $
+ * $Id: gdb_lvl3.c 218 2008-10-12 18:11:55Z xavier $
  */
 
 # ifdef HAVE_CLEWN
@@ -655,6 +655,21 @@ write_answer:
     return;
 }
 
+#  ifdef FEAT_GDB
+#   if defined(MACOS_X) || defined(MACOS_X_UNIX)
+/* Strip terminating carriage return from a line */
+    static void
+strip_cr(line)
+    char_u *line;
+{
+    int len = STRLEN(line);
+
+    if (len != 0 && line[len - 1] == '\r')
+	line[len - 1] = NUL;
+}
+#   endif
+#  endif
+
 #  ifndef FEAT_GDB
     /* Handle "prompt-for-continue" annotations.
      * This is not needed by VimGDB as the screen height is very large. */
@@ -711,6 +726,12 @@ gdb_parse_output_cli(this)
 	}
 	else
 	    line = obstack_strsave(&obs, start);
+
+#  ifdef FEAT_GDB
+#   if defined(MACOS_X) || defined(MACOS_X_UNIX)
+	strip_cr(line);
+#   endif
+#  endif
 
 	/* With GDB 6.0, completion giving as a result a long list of items causes
 	 * a "--More--" prompt to be issued after what GDB (or readline) considers
