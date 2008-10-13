@@ -17,7 +17,7 @@
  * Free Software Foundation, Inc.,
  * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  *
- * $Id: gdb_lvl3.c 218 2008-10-12 18:11:55Z xavier $
+ * $Id: gdb_lvl3.c 222 2008-10-13 14:38:07Z xavier $
  */
 
 # ifdef HAVE_CLEWN
@@ -3178,7 +3178,7 @@ oob_cmd:
 		    if (this->var_buf == NULL
 			    || (this->var_buf->b_ml.ml_flags & ML_EMPTY)
 			    || (searchit(NULL, this->var_buf, &pos,
-				    FORWARD, ptrn, 1L, SEARCH_KEEP, RE_LAST, (linenr_T)0) == FAIL))
+				    FORWARD, ptrn, 1L, SEARCH_KEEP, RE_LAST, (linenr_T)0, NULL) == FAIL))
 #  else
 		    int lnum;
 
@@ -3567,7 +3567,7 @@ varobj_hilite(this, obj, type, obs)
     if (this->var_buf != NULL && obj != NULL && obj->name != NULL
 	    && ! (this->var_buf->b_ml.ml_flags & ML_EMPTY)
 	    && searchit(NULL, this->var_buf, &pos,
-		FORWARD, ptrn, 1L, SEARCH_KEEP, RE_LAST, (linenr_T)0) != FAIL)
+		FORWARD, ptrn, 1L, SEARCH_KEEP, RE_LAST, (linenr_T)0, NULL) != FAIL)
     {
 	line = ml_get_buf(this->var_buf, pos.lnum, FALSE);
 	oldline = obstack_strsave(obs, line);
@@ -3649,7 +3649,7 @@ varobj_replace(this, obj, line, obs)
     if (this->var_buf != NULL && obj != NULL && obj->name != NULL
 	    && ! (this->var_buf->b_ml.ml_flags & ML_EMPTY)
 	    && searchit(NULL, this->var_buf, &pos,
-		FORWARD, ptrn, 1L, SEARCH_KEEP, RE_LAST, (linenr_T)0) != FAIL)
+		FORWARD, ptrn, 1L, SEARCH_KEEP, RE_LAST, (linenr_T)0, NULL) != FAIL)
     {
 	lnum = pos.lnum;
 
@@ -3801,7 +3801,7 @@ gdb_process_record(this, address, at, line, source, obs)
 		    && STRSTR(this->pool.buf[i]->b_fname, bp_file) != NULL
 		    && !(this->pool.buf[i]->b_ml.ml_flags & ML_EMPTY)
 		    && searchit(NULL, this->pool.buf[i], &pos,
-			FORWARD, ptrn, 1L, SEARCH_KEEP, RE_LAST, (linenr_T)0) != FAIL)
+			FORWARD, ptrn, 1L, SEARCH_KEEP, RE_LAST, (linenr_T)0, NULL) != FAIL)
 	    {
 		this->pool.age[i] = 0;
 		record->lnum = pos.lnum;
@@ -3877,7 +3877,7 @@ gdb_process_record(this, address, at, line, source, obs)
 
 			if (ptrn != NULL
 				&& searchit(NULL, record->buf, &pos, FORWARD,
-				    ptrn, 1L, SEARCH_KEEP, RE_LAST, (linenr_T)0) != FAIL)
+				    ptrn, 1L, SEARCH_KEEP, RE_LAST, (linenr_T)0, NULL) != FAIL)
 			{
 			    gdb_fr_lite(this, record->buf, pos.lnum, obs);
 			}

@@ -17,7 +17,7 @@
  * Free Software Foundation, Inc.,
  * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  *
- * $Id: gdb_lvl2.c 217 2008-10-11 14:29:18Z xavier $
+ * $Id: gdb_lvl2.c 222 2008-10-13 14:38:07Z xavier $
  */
 
 # ifdef HAVE_CLEWN
@@ -453,7 +453,7 @@ get_display(this, state, line, obs)
 			ptrn = (char_u *)obstack_finish(obs);
 
 			if (searchit(NULL, this->var_buf, &pos,
-				    FORWARD, ptrn, 1L, SEARCH_KEEP, RE_LAST, (linenr_T)0) != FAIL)
+				    FORWARD, ptrn, 1L, SEARCH_KEEP, RE_LAST, (linenr_T)0, NULL) != FAIL)
 			{
 			    oldline = ml_get_buf(this->var_buf, pos.lnum, FALSE);
 			    oldline = obstack_strsave(obs, oldline);
@@ -605,7 +605,7 @@ undisplay(this, state, line, obs)
 
 			if (! (this->var_buf->b_ml.ml_flags & ML_EMPTY)
 				&& searchit(NULL, this->var_buf, &pos,
-				    FORWARD, ptrn, 1L, SEARCH_KEEP, RE_LAST, (linenr_T)0) != FAIL)
+				    FORWARD, ptrn, 1L, SEARCH_KEEP, RE_LAST, (linenr_T)0, NULL) != FAIL)
 			{
 			    curbuf = this->var_buf;
 			    ml_delete(pos.lnum, FALSE);
@@ -642,7 +642,7 @@ undisplay(this, state, line, obs)
 		    if (this->var_buf == NULL
 			    || (this->var_buf->b_ml.ml_flags & ML_EMPTY)
 			    || (searchit(NULL, this->var_buf, &pos,
-				    FORWARD, ptrn, 1L, SEARCH_KEEP, RE_LAST, (linenr_T)0) == FAIL))
+				    FORWARD, ptrn, 1L, SEARCH_KEEP, RE_LAST, (linenr_T)0, NULL) == FAIL))
 		    {
 			/* add to sequence */
 			obstack_strcat(obs, numstr);
@@ -955,7 +955,7 @@ gdb_process_display(this, line, obs)
 
 		if ( ! (this->var_buf->b_ml.ml_flags & ML_EMPTY)
 			&& searchit(NULL, this->var_buf, &pos,
-			    FORWARD, ptrn, 1L, SEARCH_KEEP, RE_LAST, (linenr_T)0) != FAIL)
+			    FORWARD, ptrn, 1L, SEARCH_KEEP, RE_LAST, (linenr_T)0, NULL) != FAIL)
 		{
 		    lnum = pos.lnum;
 
