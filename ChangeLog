@@ -1,5 +1,8 @@
 
-2008-10-11  Xavier de Gaye <xdegaye at users dot sourceforge dot net>
+2008-10-19  Xavier de Gaye <xdegaye at users dot sourceforge dot net>
+
+	* clewn.c: no error message when Vim is not compiled with
+	netbeans_intg.
 
 	* gdb_lvl3.c: fix bunch of ^M characters in vimGdb console
 	on Mac OS X.

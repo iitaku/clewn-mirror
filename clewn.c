@@ -17,7 +17,7 @@
  * Free Software Foundation, Inc.,
  * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  *
- * $Id: clewn.c 217 2008-10-11 14:29:18Z xavier $
+ * $Id: clewn.c 225 2008-10-19 12:58:47Z xavier $
  */
 
 #include <config.h>
@@ -549,10 +549,6 @@ main(int argc, char ** argv)
 
     while (IS_NETBEANS_CONNECTED && GDB_STATE(gdb, GS_UP))
     {
-	/* warn the user that the data socket is not connected */
-	if (cnb_get_datasock() < 0)
-	    fputs("The netbeans socket to Vim is not connected yet...\n", rl_outstream);
-
 	/*
 	 * 1 - Wait for GDB prompt
 	 */
@@ -617,6 +613,18 @@ main(int argc, char ** argv)
         }
 
 	free(line);
+
+	/* warn the user that the data socket is not connected */
+	if (cnb_get_datasock() < 0)
+	{
+	    fputs("************************************************\n", rl_outstream);
+	    fputs("The netbeans socket to Vim is not connected yet.\n", rl_outstream);
+	    fputs("Please check that the netbeans_intg feature is compiled in your Vim version\n", rl_outstream);
+	    fputs("by running the Vim command \":version\", and checking that this command\n", rl_outstream);
+	    fputs("displays \"+netbeans_intg\".\n", rl_outstream);
+	    fputs("************************************************\n", rl_outstream);
+	}
+
     }
 
     clewn_getout();

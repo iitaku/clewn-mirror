@@ -1,4 +1,4 @@
-*clewn.txt*                                       Last change: 2007 Jul 30
+*clewn.txt*                                       Last change: 2008 Oct 19
 
 
 			      CLEWN USER MANUAL
@@ -182,6 +182,10 @@ these arguments may be double quoted. For example, start gdb with the program
 foobar and "this is foobar argument" as foobar's argument:
 
     clewn -ga '--args foobar "this is foobar argument"' ~
+
+It is not possible to set the GDB "-tty" argument this way. When you want to
+set the terminal for future runs of the program being debugged, you must do it
+from GDB, once it is started.
 
 Note: To pass multiple source file names to VIM, one can use the following
 method with the 'tr' command from GNU coreutils:
