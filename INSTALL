@@ -8,7 +8,7 @@ INSTALL.txt - Clewn installation notes.
 
 a) REQUIRED:
 ------------
-    GDB:	    gdb 6.6 or any previous version, starting from gdb 5.3
+    GDB:	    gdb 6.8 or any previous version, starting from gdb 5.3
     VIM:	    any version starting from Vim 6.3 with
 		    the |+netbeans_intg| feature enabled
     GNU readline
