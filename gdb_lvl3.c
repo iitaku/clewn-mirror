@@ -17,7 +17,7 @@
  * Free Software Foundation, Inc.,
  * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  *
- * $Id: gdb_lvl3.c 222 2008-10-13 14:38:07Z xavier $
+ * $Id: gdb_lvl3.c 230 2009-11-28 16:50:31Z xavier $
  */
 
 # ifdef HAVE_CLEWN
@@ -131,6 +131,7 @@ static void remove_object __ARGS((gdb_T *, varobj_T *));
 
 /* Utilities */
 static char_u * parse_note __ARGS((gdb_T *, char_u *));
+static void print_version __ARGS((gdb_T *, char_u *));
 #  ifndef FEAT_GDB
 static int get_note __ARGS((gdb_T *, char_u *));
 #  endif
@@ -720,8 +721,8 @@ gdb_parse_output_cli(this)
 	/* concatenate with incomplete annotation */
 	if (this->annotation != NULL)
 	{
-	    obstack_strcat(&obs, this->annotation);
-	    obstack_strcat0(&obs, start);
+	    OBSTACK_STRCAT(&obs, this->annotation);
+	    OBSTACK_STRCAT0(&obs, start);
 	    line = (char_u *)obstack_finish(&obs);
 	}
 	else
@@ -981,8 +982,8 @@ gdb_parse_output_cli(this)
 		    if (this->note == ANO_ERROR_BEG && STRCMP(line, "Quit") == 0)
 			this->syntax = TRUE;
 
-		    obstack_strcat(&obs, this->line);
-		    obstack_strcat0(&obs, line);
+		    OBSTACK_STRCAT(&obs, this->line);
+		    OBSTACK_STRCAT0(&obs, line);
 		    line = (char_u *)obstack_finish(&obs);
 
 #  ifndef FEAT_GDB  /* do not write "(gdb) Quit"  with Clewn (already done) */
@@ -1501,8 +1502,8 @@ eol_choices(cmd, obs)
 {
     char_u *new;
 
-    obstack_strcat(obs, cmd->readline);
-    obstack_strcat0(obs, cmd->gdb);
+    OBSTACK_STRCAT(obs, cmd->readline);
+    OBSTACK_STRCAT0(obs, cmd->gdb);
     new = (char_u *)obstack_finish(obs);
 
     /* a match with the new readline */
@@ -1614,6 +1615,22 @@ gdb_setup_cli(this)
      * MAX_BUFFSIZE must be greater than max gdb line length */
     for (last = (char_u *)gdb_buf; buff + MAX_BUFFSIZE - last > 1; )
     {
+#   ifdef ONE_CHUNK
+        /* emulate systems that read gdb responses in one chunk
+         * (for testing purposes) */
+        sleep(1);
+	if ((len = gdb_read(this, last,
+			buff + MAX_BUFFSIZE - last, SG_TIMEOUT)) < 0)
+	{
+	    err = "Unable to read from GDB pseudo tty";
+	    goto fail;
+	}
+	else if (len == 0)	/* needle not found */
+	    break;
+	last += len;
+        sleep(1);
+#   endif
+
 	if ((len = gdb_read(this, last,
 			buff + MAX_BUFFSIZE - last, SG_TIMEOUT)) < 0)
 	{
@@ -1749,7 +1766,7 @@ gdb_setup_cli(this)
 		    /* write the remaining part and display it */
 		    if (*ptr != NUL)
 #   endif
-			gdb_write_buf(this, ptr, TRUE);
+                        print_version(this, ptr);
 
 #   ifdef FEAT_GDB
 		    /* redraw gdb console window when displayed */
@@ -1779,7 +1796,7 @@ gdb_setup_cli(this)
 		    /* write the remaining part and display it */
 		    if (*ptr != NUL)
 #   endif
-			gdb_write_buf(this, ptr, TRUE);
+                        print_version(this, ptr);
 
 #   ifdef FEAT_GDB
 		    /* redraw gdb console window when displayed */
@@ -1858,7 +1875,7 @@ gdb_print_value(this, state, line, obs)
 	case OOB_CMD:
 	    if (this->balloon_txt != NULL) {
 		obstack_strcat(obs, "server interpreter-exec mi \"-data-evaluate-expression ");
-		obstack_strcat(obs, this->balloon_txt);
+		OBSTACK_STRCAT(obs, this->balloon_txt);
 		obstack_strcat0(obs, "\"\n");
 
 		FREE(this->lvl3.result);
@@ -1881,9 +1898,9 @@ gdb_print_value(this, state, line, obs)
 	    {
 		*quote = NUL;
 		obstack_strcat(obs, "\" ");
-		obstack_strcat(obs, this->balloon_txt);
+		OBSTACK_STRCAT(obs, this->balloon_txt);
 		obstack_strcat(obs, " = ");
-		obstack_strcat(obs, ptr);
+		OBSTACK_STRCAT(obs, ptr);
 		obstack_strcat0(obs, " \"");
 
 		res = (char_u *)obstack_finish(obs);
@@ -2053,7 +2070,7 @@ gdb_stack_frame(this, state, line, obs)
 
 		sprintf(tmp, "%d %d", this->frame_curlvl, this->frame_curlvl);
 		obstack_strcat(obs, "server interpreter-exec mi \"-stack-list-frames ");
-		obstack_strcat(obs, tmp);
+		OBSTACK_STRCAT(obs, tmp);
 		obstack_strcat0(obs, "\"\n");
 		return (char *)obstack_finish(obs);
 	    }
@@ -2199,7 +2216,7 @@ gdb_source_project(this, state, line, obs)
 		    fprintf(stderr, "Warning: symbol table \"%s\" was loaded before sourcing the project file\n", this->sfile);
 
 		obstack_strcat(obs, "server source ");
-		obstack_strcat(obs, this->project_file);
+		OBSTACK_STRCAT(obs, this->project_file);
 		obstack_strcat0(obs, "\n");
 		return (char_u *)obstack_finish(obs);
 	    }
@@ -2505,7 +2522,7 @@ gdb_get_asmfunc(this, state, line, obs)
 	    if (this->asm_add != NULL)
 	    {
 		obstack_strcat(obs, "server info symbol 0x");
-		obstack_strcat(obs, this->asm_add);
+		OBSTACK_STRCAT(obs, this->asm_add);
 		obstack_strcat0(obs, "\n");
 		return (char *)obstack_finish(obs);
 	    }
@@ -2541,7 +2558,7 @@ gdb_get_asmfunc_hack(this, state, line, obs)
 	    if (this->asm_add != NULL && this->asm_func == NULL)
 	    {
 		obstack_strcat(obs, "server print/a 0x");
-		obstack_strcat(obs, this->asm_add);
+		OBSTACK_STRCAT(obs, this->asm_add);
 		obstack_strcat0(obs, "\n");
 		return (char *)obstack_finish(obs);
 	    }
@@ -2616,13 +2633,13 @@ gdb_get_asm(this, state, line, obs)
 
 		/* init msg_busy */
 		obstack_strcat(obs, "Disassembling 0x");
-		obstack_strcat0(obs, this->asm_add);
+		OBSTACK_STRCAT0(obs, this->asm_add);
 		res = (char_u *)obstack_finish(obs);
 		gdb_msg_busy(res);
 
 		/* send cmd */
 		obstack_strcat(obs, "server disassemble 0x");
-		obstack_strcat(obs, this->asm_add);
+		OBSTACK_STRCAT(obs, this->asm_add);
 		obstack_strcat0(obs, "\n");
 		return (char *)obstack_finish(obs);
 	    }
@@ -2638,8 +2655,8 @@ gdb_get_asm(this, state, line, obs)
 	     * and replace line, otherwise add */
 	    if (this->line != NULL && this->annoted)
 	    {
-		obstack_strcat(obs, this->line);
-		obstack_strcat0(obs, line);
+		OBSTACK_STRCAT(obs, this->line);
+		OBSTACK_STRCAT0(obs, line);
 		line = (char_u *)obstack_finish(obs);
 		ml_delete(lnum--, FALSE);
 	    }
@@ -2689,7 +2706,7 @@ gdb_get_asm(this, state, line, obs)
 		/* set buffer name to function name */
 		if (this->asm_func != NULL)
 		{
-		    obstack_strcat(obs, this->asm_func);
+		    OBSTACK_STRCAT(obs, this->asm_func);
 		    obstack_strcat0(obs, "-asm");
 		    res = (char_u *)obstack_finish(obs);
 		    gdb_as_setname(res);
@@ -2734,7 +2751,7 @@ gdb_get_asm(this, state, line, obs)
 		 * the file name suffix is '.clasm' so that it can be set
 		 * to 'autoread' by the runtime file clewn.vim */
 		if (this->asm_func != NULL) {
-		    obstack_strcat(obs, this->asm_func);
+		    OBSTACK_STRCAT(obs, this->asm_func);
 		    obstack_strcat0(obs, ".clasm");
 		    fname = (char_u *)obstack_finish(obs);
 		}
@@ -2761,14 +2778,14 @@ gdb_get_asm(this, state, line, obs)
 
 		/* init msg_busy */
 		obstack_strcat(obs, "Disassembling 0x");
-		obstack_strcat0(obs, this->asm_add);
+		OBSTACK_STRCAT0(obs, this->asm_add);
 		res = (char_u *)obstack_finish(obs);
 		gdb_msg_busy(res);
 
 		/* send cmd */
 		this->lastline = 0;
 		obstack_strcat(obs, "server disassemble 0x");
-		obstack_strcat(obs, this->asm_add);
+		OBSTACK_STRCAT(obs, this->asm_add);
 		obstack_strcat0(obs, "\n");
 		return (char_u *)obstack_finish(obs);
 	    }
@@ -2787,8 +2804,8 @@ gdb_get_asm(this, state, line, obs)
 	     * and replace line, otherwise add */
 	    if (this->line != NULL && this->annoted)
 	    {
-		obstack_strcat(obs, this->line);
-		obstack_strcat0(obs, line);
+		OBSTACK_STRCAT(obs, this->line);
+		OBSTACK_STRCAT0(obs, line);
 		line = (char_u *)obstack_finish(obs);
 
 		this->lastline--;
@@ -3138,7 +3155,7 @@ oob_cmd:
 			this->lvl3.varcmd = VCMD_CREATE;
 
 			obstack_strcat(obs, "server interpreter-exec mi \"-var-create - * (");
-			obstack_strcat(obs, obj->expression);
+			OBSTACK_STRCAT(obs, obj->expression);
 			obstack_strcat0(obs, ")\"\n");
 			return (char *)obstack_finish(obs);
 		    }
@@ -3171,7 +3188,7 @@ oob_cmd:
 		    pos.col = 0;
 
 		    obstack_strcat(obs, "^\\s*");
-		    obstack_strcat(obs, obj->name);
+		    OBSTACK_STRCAT(obs, obj->name);
 		    obstack_strcat0(obs, ":");
 		    ptrn = (char_u *)obstack_finish(obs);
 
@@ -3189,7 +3206,7 @@ oob_cmd:
 			this->lvl3.varcmd = VCMD_DELETE;
 
 			obstack_strcat(obs, "server interpreter-exec mi \"-var-delete var");
-			obstack_strcat(obs, obj->name);
+			OBSTACK_STRCAT(obs, obj->name);
 			obstack_strcat0(obs, "\"\n");
 			return (char *)obstack_finish(obs);
 		    }
@@ -3205,7 +3222,7 @@ oob_cmd:
 			this->lvl3.varcmd = VCMD_CHILDREN;
 
 			obstack_strcat(obs, "server interpreter-exec mi \"-var-list-children var");
-			obstack_strcat(obs, obj->name);
+			OBSTACK_STRCAT(obs, obj->name);
 			obstack_strcat0(obs, "\"\n");
 			return (char *)obstack_finish(obs);
 		    }
@@ -3217,7 +3234,7 @@ oob_cmd:
 		    if (obj->format != NULL && STRLEN(obj->format) == 2)
 		    {
 			obstack_strcat(obs, "server interpreter-exec mi \"-var-set-format var");
-			obstack_strcat(obs, obj->name);
+			OBSTACK_STRCAT(obs, obj->name);
 
 			switch(*(obj->format + 1))
 			{
@@ -3258,7 +3275,7 @@ oob_cmd:
 		    this->lvl3.varcmd = VCMD_UPDATE;
 
 		    obstack_strcat(obs, "server interpreter-exec mi \"-var-update var");
-		    obstack_strcat(obs, obj->name);
+		    OBSTACK_STRCAT(obs, obj->name);
 		    obstack_strcat0(obs, "\"\n");
 		    return (char *)obstack_finish(obs);
 		}
@@ -3270,9 +3287,9 @@ oob_cmd:
 		    this->lvl3.varcmd = VCMD_PRINT;
 
 		    obstack_strcat(obs, "server output ");
-		    obstack_strcat(obs, obj->format);
+		    OBSTACK_STRCAT(obs, obj->format);
 		    obstack_strcat(obs, " ");
-		    obstack_strcat(obs, obj->expression);
+		    OBSTACK_STRCAT(obs, obj->expression);
 		    obstack_strcat0(obs, "\n");
 		    return (char *)obstack_finish(obs);
 		}
@@ -3283,7 +3300,7 @@ oob_cmd:
 		    this->lvl3.varcmd = VCMD_EVALUATE;
 
 		    obstack_strcat(obs, "server interpreter-exec mi \"-var-evaluate-expression var");
-		    obstack_strcat(obs, obj->name);
+		    OBSTACK_STRCAT(obs, obj->name);
 		    obstack_strcat0(obs, "\"\n");
 		    return (char *)obstack_finish(obs);
 		}
@@ -3426,14 +3443,14 @@ varobj_complete(this, obs)
 		}
 		
 		/* build the display line including ={*}, the hiliting sign */
-		obstack_strcat(obs, obj->name);
+		OBSTACK_STRCAT(obs, obj->name);
 		obstack_strcat(obs, ":");
-		obstack_strcat(obs, obj->format);
+		OBSTACK_STRCAT(obs, obj->format);
 		obstack_strcat(obs, " ");
-		obstack_strcat(obs, obj->expression);
+		OBSTACK_STRCAT(obs, obj->expression);
 		obstack_strcat(obs, " ={*} ");
 		if (this->lvl3.result != NULL) {
-		    obstack_strcat0(obs, this->lvl3.result);
+		    OBSTACK_STRCAT0(obs, this->lvl3.result);
 		}
 		displine = (char_u *)obstack_finish(obs);
 
@@ -3505,13 +3522,13 @@ varobj_complete(this, obs)
 		    *last = NUL;
 
 		    /* build the display line including ={*}, the hiliting sign */
-		    obstack_strcat(obs, obj->name);
+		    OBSTACK_STRCAT(obs, obj->name);
 		    obstack_strcat(obs, ":");
-		    obstack_strcat(obs, obj->format);
+		    OBSTACK_STRCAT(obs, obj->format);
 		    obstack_strcat(obs, " ");
-		    obstack_strcat(obs, obj->expression);
+		    OBSTACK_STRCAT(obs, obj->expression);
 		    obstack_strcat(obs, " ={*} ");
-		    obstack_strcat0(obs, res);
+		    OBSTACK_STRCAT0(obs, res);
 		    displine = (char_u *)obstack_finish(obs);
 
 
@@ -3560,7 +3577,7 @@ varobj_hilite(this, obj, type, obs)
 
     /* search for obj in variables window */
     obstack_strcat(obs, "^\\s*");
-    obstack_strcat(obs, obj->name);
+    OBSTACK_STRCAT(obs, obj->name);
     obstack_strcat0(obs, ":");
     ptrn = (char_u *)obstack_finish(obs);
 
@@ -3642,7 +3659,7 @@ varobj_replace(this, obj, line, obs)
 
     /* search for object in variables window */
     obstack_strcat(obs, "^\\s*");
-    obstack_strcat(obs, obj->name);
+    OBSTACK_STRCAT(obs, obj->name);
     obstack_strcat0(obs, ":");
     ptrn = (char_u *)obstack_finish(obs);
 
@@ -3789,7 +3806,7 @@ gdb_process_record(this, address, at, line, source, obs)
 	 * with bp_file and find the one containing a line starting
 	 * with address */
 	obstack_strcat(obs, "^\\s*0x0*");
-	obstack_strcat0(obs, address);
+	OBSTACK_STRCAT0(obs, address);
 	ptrn = (char_u *)obstack_finish(obs);
 
 	for (i = 0; i < this->pool.max; i++)
@@ -3872,7 +3889,7 @@ gdb_process_record(this, address, at, line, source, obs)
 			pos.col = 0;
 
 			obstack_strcat(obs, "^\\s*0x0*");
-			obstack_strcat0(obs, this->frame_pc);
+			OBSTACK_STRCAT0(obs, this->frame_pc);
 			ptrn = (char_u *)obstack_finish(obs);
 
 			if (ptrn != NULL
@@ -4093,6 +4110,36 @@ parse_note(this, str)
 	}
     }
     return note;
+}
+
+/*
+ * Process the last chunk of data received from gdb at the init stage.
+ * On some systems, it may contain:
+ *      gdb intro + pre_prompt annotation + prompt + post-prompt annotation
+ */
+    static void
+print_version(this, ptr)
+    gdb_T * this;
+    char_u * ptr;
+{
+    char_u * sp;
+    char_u * ep;
+    if ((sp=parse_note(this, ptr)) != NULL
+            && (ep=STRSTR(sp, "\032\032")) != NULL)
+    {
+        *(ep - 1) = NUL;    /* skip annotation new line */
+        xfree(this->prompt);
+        this->prompt = (char_u *)clewn_strsave(sp + 1);
+        if ((ep=STRSTR(ptr, "\032\032")) != NULL)
+        {
+            *ep = NUL;
+            this->note = ANO_POSTPROMPT;
+            gdb_write_buf(this, ptr, TRUE);
+            this->note = ANO_PROMPT;
+        }
+    }
+    else
+        gdb_write_buf(this, ptr, TRUE);
 }
 
 #  ifndef FEAT_GDB

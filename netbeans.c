@@ -17,7 +17,7 @@
  * Free Software Foundation, Inc.,
  * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  *
- * $Id: netbeans.c 217 2008-10-11 14:29:18Z xavier $
+ * $Id: netbeans.c 230 2009-11-28 16:50:31Z xavier $
  */
 
 #include <config.h>
@@ -554,7 +554,7 @@ cnb_data_evt()
 	(void)obstack_init(&obs);
 
 	/* add to previous partial line */
-	obstack_strcat(&obs, cnb->line);
+	OBSTACK_STRCAT(&obs, cnb->line);
 	obstack_strcat0(&obs, cnb_buf);
 	evt = (char *)obstack_finish(&obs);
 
@@ -1299,7 +1299,7 @@ cnb_define_sign(bufno, id, type, obs)
 	 * where:
 	 *  x is the gdb instance number
 	 *  nnn is the breakpoint number */
-	obstack_strcat(obs, prefix);
+	OBSTACK_STRCAT(obs, prefix);
 	strcpy(text, gdb_itoa(cnb->instance));
 	obstack_strcat(obs, text);
 	obstack_strcat(obs, "_");
@@ -1594,7 +1594,7 @@ pm_mapto_vim(name, sourcedir, source_cur, source_list, obs)
 	if (strcmp(ptr, GDB_CDIR) == 0) {
 	    /* hay: file="NAME",fullname=" */
 	    obstack_strcat(obs, "file=\"");
-	    obstack_strcat(obs, name);
+	    OBSTACK_STRCAT(obs, name);
 	    obstack_strcat0(obs, "\",fullname=\"");
 	    hay = (char *)obstack_finish(obs);
 
@@ -1627,8 +1627,8 @@ pm_mapto_vim(name, sourcedir, source_cur, source_list, obs)
 		|| ((ptr=pathname) && *(m->gdb_path) == NUL))
 	{
 	    ptr += strlen(m->gdb_path);
-	    obstack_strcat(obs, m->vim_path);
-	    obstack_strcat0(obs, ptr);
+	    OBSTACK_STRCAT(obs, m->vim_path);
+	    OBSTACK_STRCAT0(obs, ptr);
 	    return (char *)obstack_finish(obs);
 	}
     }
@@ -1652,8 +1652,8 @@ pm_mapto_gdb(name, obs)
     for (m=cnb->remote_map; m != NULL && m->gdb_path != NULL; m++) {
 	if ((ptr=strstr(name, m->vim_path)) == name || ((ptr=name) && *(m->vim_path) == NUL)) {
 	    ptr += strlen(m->vim_path);
-	    obstack_strcat(obs, m->gdb_path);
-	    obstack_strcat0(obs, ptr);
+	    OBSTACK_STRCAT(obs, m->gdb_path);
+	    OBSTACK_STRCAT0(obs, ptr);
 	    return clewn_strsave(obstack_finish(obs));
 	}
     }
@@ -2053,7 +2053,7 @@ cnb_append(bufno, line, obs)
 	*ptr = NUL;
 
     /* add the terminating new line */
-    obstack_strcat(obs, line);
+    OBSTACK_STRCAT(obs, line);
     obstack_strcat0(obs, "\n");
     res = (char *)obstack_finish(obs);
 
@@ -2074,7 +2074,7 @@ cnb_append(bufno, line, obs)
 
     sprintf(cnb_buf, "%d ", offset);
     obstack_strcat(obs, cnb_buf);
-    obstack_strcat0(obs, quoted);
+    OBSTACK_STRCAT0(obs, quoted);
     res = (char *)obstack_finish(obs);
 
     /* insert line in linked list */
@@ -2201,7 +2201,7 @@ cnb_replace(bufno, line, lnum, obs)
 	*ptr = NUL;
 
     /* add two terminating new lines */
-    obstack_strcat(obs, line);
+    OBSTACK_STRCAT(obs, line);
     obstack_strcat0(obs, "\n\n");
     res = (char *)obstack_finish(obs);
 
@@ -2230,13 +2230,13 @@ cnb_replace(bufno, line, lnum, obs)
 
     sprintf(cnb_buf, "%d ", offset);
     obstack_strcat(obs, cnb_buf);
-    obstack_strcat0(obs, quoted);
+    OBSTACK_STRCAT0(obs, quoted);
     res = (char *)obstack_finish(obs);
 
     sprintf(cnb_buf, "%d %d", offset, len);
     oldline = obstack_strsave(obs, cnb_buf);
 
-    sprintf(cnb_buf, "%d 2", offset + strlen(line) + 1);
+    sprintf(cnb_buf, "%d 2", offset + (int) strlen(line) + 1);
     twonl = obstack_strsave(obs, cnb_buf);
 
     /* replace line in linked list */

@@ -17,7 +17,7 @@
  * Free Software Foundation, Inc.,
  * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  *
- * $Id: clewn.c 225 2008-10-19 12:58:47Z xavier $
+ * $Id: clewn.c 230 2009-11-28 16:50:31Z xavier $
  */
 
 #include <config.h>
@@ -3157,11 +3157,11 @@ gdb_status(this, status, obs)
 	    for (p = q = this->sfile; *q; q++)
 		if (*q == '/')
 		    p = q + 1;
-	    obstack_strcat(obs, p);
+	    OBSTACK_STRCAT(obs, p);
 	}
 
 	obstack_strcat(obs, " [");
-	obstack_strcat(obs, status);
+	OBSTACK_STRCAT(obs, status);
 	obstack_strcat0(obs, "]");
 	p = (char *)obstack_finish(obs);
 	cnb_showBalloon(p, TRUE, obs);

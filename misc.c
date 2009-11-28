@@ -17,7 +17,7 @@
  * Free Software Foundation, Inc.,
  * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  *
- * $Id: misc.c 217 2008-10-11 14:29:18Z xavier $
+ * $Id: misc.c 230 2009-11-28 16:50:31Z xavier $
  */
 
 #ifdef HAVE_CLEWN
@@ -521,7 +521,7 @@ get_fullpath(name, sourcedir, source_cur, source_list, obs)
 	{
 	    /* hay: file="NAME",fullname=" */
 	    obstack_strcat(obs, "file=\"");
-	    obstack_strcat(obs, name);
+	    OBSTACK_STRCAT(obs, name);
 	    obstack_strcat0(obs, "\",fullname=\"");
 	    hay = (char *)obstack_finish(obs);
 
@@ -553,9 +553,9 @@ get_fullpath(name, sourcedir, source_cur, source_list, obs)
 
 	if (dir != NULL)
 	{
-	    obstack_strcat(obs, dir);
+	    OBSTACK_STRCAT(obs, dir);
 	    obstack_strcat(obs, "/");
-	    obstack_strcat0(obs, name);
+	    OBSTACK_STRCAT0(obs, name);
 	    pathname = (char *)obstack_finish(obs);
 
 	    if (stat((char *)pathname, &st) == 0) {

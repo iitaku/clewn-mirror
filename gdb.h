@@ -17,7 +17,7 @@
  * Free Software Foundation, Inc.,
  * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  *
- * $Id: gdb.h 148 2007-07-21 16:35:40Z xavier $
+ * $Id: gdb.h 230 2009-11-28 16:50:31Z xavier $
  */
 
 #ifndef GDB_H
@@ -26,9 +26,11 @@
 #define obstack_chunk_alloc  malloc
 #define obstack_chunk_free   free
 #define obstack_strsave(o,s) (char_u *)obstack_copy0((o), (s), STRLEN((s)))
-#define obstack_strcat(o,s)			    \
+#define obstack_strcat(o,s) obstack_grow((o), (s), STRLEN((s)))
+#define OBSTACK_STRCAT(o,s)			    \
 ( (s) ? obstack_grow((o), (s), STRLEN((s))) : 0)
-#define obstack_strcat0(o,s)			    \
+#define obstack_strcat0(o,s) obstack_grow0((o), (s), STRLEN((s)))
+#define OBSTACK_STRCAT0(o,s)			    \
 ( (s)						    \
   ? obstack_grow0((o), (s), STRLEN((s)))	    \
   : obstack_grow0((o), "", 0))
@@ -52,7 +54,7 @@
 #endif
 
 #define KEY_INTERUPT	Ctrl_Z	/* interrupt */
-#define MAX_BUFFSIZE	1024
+#define MAX_BUFFSIZE	4096
 
 /* The breakpoint info record structure */
 typedef struct bpinfo_struct bpinfo_T;

@@ -1,4 +1,13 @@
 
+2009-11-28  Xavier de Gaye <xdegaye at users dot sourceforge dot net>
+
+	* netbeans.c gdb.h clewn.c misc.c gdb_lvl2.c gdb_lvl3.c: correct
+	compilation warnings with gcc 4.3.2.
+
+	* gdb_lvl3.c: fix clewn hangs on startup with ubuntu 9.10 where gdb
+	responses are received in one big chunk of data.
+
+===============================================================================
 2008-10-19  Xavier de Gaye <xdegaye at users dot sourceforge dot net>
 
 	* clewn.c: no error message when Vim is not compiled with

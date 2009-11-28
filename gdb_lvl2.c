@@ -17,7 +17,7 @@
  * Free Software Foundation, Inc.,
  * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  *
- * $Id: gdb_lvl2.c 222 2008-10-13 14:38:07Z xavier $
+ * $Id: gdb_lvl2.c 230 2009-11-28 16:50:31Z xavier $
  */
 
 # ifdef HAVE_CLEWN
@@ -448,7 +448,7 @@ get_display(this, state, line, obs)
 
 			/* search for display item in variables window */
 			obstack_strcat(obs, "^\\s*");
-			obstack_strcat(obs, gdb_itoa(item->num));
+			OBSTACK_STRCAT(obs, gdb_itoa(item->num));
 			obstack_strcat0(obs, ":");
 			ptrn = (char_u *)obstack_finish(obs);
 
@@ -586,7 +586,7 @@ undisplay(this, state, line, obs)
 
 		    /* not in * GDB "automatic display list" */
 		    obstack_strcat(obs, " ");
-		    obstack_strcat(obs, numstr);
+		    OBSTACK_STRCAT(obs, numstr);
 		    obstack_strcat0(obs, " ");
 		    num = (char_u *)obstack_finish(obs);
 
@@ -599,7 +599,7 @@ undisplay(this, state, line, obs)
 
 			/* remove line from window if exists */
 			obstack_strcat(obs, "^\\s*");
-			obstack_strcat(obs, numstr);
+			OBSTACK_STRCAT(obs, numstr);
 			obstack_strcat0(obs, ":");
 			ptrn = (char_u *)obstack_finish(obs);
 
@@ -635,7 +635,7 @@ undisplay(this, state, line, obs)
 
 		    /* not in gdb variables window */
 		    obstack_strcat(obs, "^\\s*");
-		    obstack_strcat(obs, numstr);
+		    OBSTACK_STRCAT(obs, numstr);
 		    obstack_strcat0(obs, ":");
 		    ptrn = (char_u *)obstack_finish(obs);
 
@@ -645,7 +645,7 @@ undisplay(this, state, line, obs)
 				    FORWARD, ptrn, 1L, SEARCH_KEEP, RE_LAST, (linenr_T)0, NULL) == FAIL))
 		    {
 			/* add to sequence */
-			obstack_strcat(obs, numstr);
+			OBSTACK_STRCAT(obs, numstr);
 			obstack_strcat0(obs, " ");
 			sequence = (char_u *)obstack_finish(obs);
 
@@ -666,7 +666,7 @@ undisplay(this, state, line, obs)
 		if (sequence != NULL)
 		{
 		    obstack_strcat(obs, "server undisplay ");
-		    obstack_strcat(obs, sequence);
+		    OBSTACK_STRCAT(obs, sequence);
 		    obstack_strcat0(obs, "\n");
 		    return (char *)obstack_finish(obs);
 		}
@@ -699,7 +699,7 @@ undisplay(this, state, line, obs)
 
 		    /* not in * GDB "automatic display list" */
 		    obstack_strcat(obs, " ");
-		    obstack_strcat(obs, numstr);
+		    OBSTACK_STRCAT(obs, numstr);
 		    obstack_strcat0(obs, " ");
 		    num = (char_u *)obstack_finish(obs);
 
@@ -723,7 +723,7 @@ undisplay(this, state, line, obs)
 		    if (this->var_buf <= 0 || cnb_search_obj(numstr, &lnum) == NULL)
 		    {
 			/* add to sequence */
-			obstack_strcat(obs, numstr);
+			OBSTACK_STRCAT(obs, numstr);
 			obstack_strcat0(obs, " ");
 			sequence = (char_u *)obstack_finish(obs);
 
@@ -744,7 +744,7 @@ undisplay(this, state, line, obs)
 		if (sequence != NULL)
 		{
 		    obstack_strcat(obs, "server undisplay ");
-		    obstack_strcat(obs, sequence);
+		    OBSTACK_STRCAT(obs, sequence);
 		    obstack_strcat0(obs, "\n");
 		    return (char_u *)obstack_finish(obs);
 		}
@@ -883,11 +883,11 @@ gdb_process_display(this, line, obs)
 	    }
 
 	    /* Build the display line including ={*}, the hiliting sign */
-	    obstack_strcat(obs, this->lvl2.dentry.num);
+	    OBSTACK_STRCAT(obs, this->lvl2.dentry.num);
 	    obstack_strcat(obs, ":");
-	    obstack_strcat(obs, this->lvl2.dentry.expression);
+	    OBSTACK_STRCAT(obs, this->lvl2.dentry.expression);
 	    obstack_strcat(obs, " ={*} ");
-	    obstack_strcat0(obs, this->lvl2.dentry.value);
+	    OBSTACK_STRCAT0(obs, this->lvl2.dentry.value);
 	    displine = (char_u *)obstack_finish(obs);
 
 	    /*
@@ -949,7 +949,7 @@ gdb_process_display(this, line, obs)
 
 		/* search for display item in variables window */
 		obstack_strcat(obs, "^\\s*");
-		obstack_strcat(obs, this->lvl2.dentry.num);
+		OBSTACK_STRCAT(obs, this->lvl2.dentry.num);
 		obstack_strcat0(obs, ":");
 		ptrn = (char_u *)obstack_finish(obs);
 
@@ -960,7 +960,7 @@ gdb_process_display(this, line, obs)
 		    lnum = pos.lnum;
 
 		    obstack_strcat(obs, "} ");
-		    obstack_strcat0(obs, this->lvl2.dentry.value);
+		    OBSTACK_STRCAT0(obs, this->lvl2.dentry.value);
 		    res = (char_u *)obstack_finish(obs);
 
 		    last = NULL;
@@ -1015,7 +1015,7 @@ gdb_process_display(this, line, obs)
 		if ((start = cnb_search_obj(this->lvl2.dentry.num, &line_nb)) != NULL)
 		{
 		    obstack_strcat(obs, "} ");
-		    obstack_strcat0(obs, this->lvl2.dentry.value);
+		    OBSTACK_STRCAT0(obs, this->lvl2.dentry.value);
 		    res = (char_u *)obstack_finish(obs);
 
 		    last = NULL;
