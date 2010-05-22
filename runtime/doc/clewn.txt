@@ -1,4 +1,4 @@
-*clewn.txt*                                       Last change: 2008 Oct 19
+*clewn.txt*                                       Last change: 2010 May 22
 
 
 			      CLEWN USER MANUAL
@@ -567,7 +567,7 @@ commands.
 
 The "createvar" command syntax is:
 
-    createvar/FMT variable
+    createvar /FMT variable
 
 where /FMT is optionnal and FMT may be one of:
     `t'
@@ -639,9 +639,9 @@ command is run without argument.
 ---------------------
 This sub-section describes what is specific to level 3.
 
-Level 3 deals only with variables, not expressions. However this mode provides
-with the variables window a much more powerful tool than is provided by
-level 2.
+In level 3, expressions must not contain any space character. This mode
+provides with the variables window a much more powerful tool than is provided
+by level 2.
 
 First, variables are updated any time you enter any GDB command. If you are
 tracking variable "int foo" with a current value of 100, and run the GDB
